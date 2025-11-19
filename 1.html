@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TW-动态空间</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* 发布按钮 */
+        .publish-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .publish-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+        }
+
+        /* 动态卡片 */
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 200px;
+        }
+
+        .feed-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .feed-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .feed-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .post-time {
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* 删除按钮 */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 16px;
+            opacity: 0;
+        }
+
+        .feed-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+        }
+
+        .feed-content {
+            padding: 0 20px 16px;
+        }
+
+        .feed-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        .feed-image {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .feed-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .feed-image img:hover {
+            transform: scale(1.02);
+        }
+
+        .feed-actions {
+            display: flex;
+            padding: 12px 20px;
+            border-top: 1px solid #f5f5f5;
+            gap: 20px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .action-btn.liked {
+            color: #ff4757;
+        }
+
+        /* 发布模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .modal-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+        }
+
+        /* 相机相册选择区域 */
+        .camera-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .camera-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .camera-option:hover {
+            border-color: #1890ff;
+            background: #f8fbff;
+            transform: translateY(-2px);
+        }
+
+        .camera-option i {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .camera-option-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .camera-option-subtext {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        .file-info {
+            font-size: 13px;
+            color: #999;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .remove-image {
+            display: block;
+            margin: 10px auto 0;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .remove-image:hover {
+            background: #ff7875;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .cancel-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            color: #666;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .publish-action-btn {
+            background-color: #1890ff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .publish-action-btn:hover {
+            background-color: #0d7ae6;
+        }
+
+        .publish-action-btn:disabled {
+            background-color: #bae7ff;
+            cursor: not-allowed;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state .subtext {
+            font-size: 14px;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 确认删除模态框 */
+        .confirm-modal .modal {
+            max-width: 400px;
+        }
+
+        .confirm-content {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .confirm-icon {
+            font-size: 48px;
+            color: #ff4d4f;
+            margin-bottom: 16px;
+        }
+
+        .confirm-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .confirm-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .confirm-cancel {
+            background: none;
+            border: 1px solid #e0e0e0;
+            color: #666;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .confirm-cancel:hover {
+            background-color: #f5f5f5;
+        }
+
+        .confirm-delete {
+            background-color: #ff4d4f;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .confirm-delete:hover {
+            background-color: #ff7875;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .publish-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
+            }
+            
+            .feed-header {
+                padding: 14px 16px 10px;
+            }
+            
+            .feed-content {
+                padding: 0 16px 14px;
+            }
+            
+            .feed-actions {
+                padding: 10px 16px;
+            }
+            
+            .modal-overlay {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .feed-card {
+                border-radius: 8px;
+            }
+            
+            .modal {
+                width: 100%;
+            }
+            
+            .modal-overlay {
+                padding: 10px;
+            }
+            
+            .delete-btn {
+                opacity: 1;
+            }
+            
+            .camera-options {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>动态空间</h1>
+            <button class="back-btn" onclick="goBack()">
+                <i>←</i> 返回聊天室
+            </button>
+        </div>
+
+        <div class="feed-container" id="feed-container">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                加载动态中(需要发布动态才会关闭加载中)...
+            </div>
+        </div>
+
+        <button class="publish-btn" id="publish-btn">
+            +
+        </button>
+    </div>
+
+    <!-- 发布动态模态框 -->
+    <div class="modal-overlay" id="publish-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">发布动态</div>
+                <button class="modal-close" onclick="closePublishModal()">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label class="form-label">分享你的想法</label>
+                    <textarea class="form-textarea" id="post-content" placeholder="写下你想分享的内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">添加图片</label>
+                    <div class="camera-options">
+                        <div class="camera-option" onclick="openCamera()">
+                            <i>📷</i>
+                            <div class="camera-option-text">拍照</div>
+                            <div class="camera-option-subtext">使用相机拍摄</div>
+                        </div>
+                        <div class="camera-option" onclick="openPhotoLibrary()">
+                            <i>🖼️</i>
+                            <div class="camera-option-text">相册</div>
+                            <div class="camera-option-subtext">从相册选择</div>
+                        </div>
+                    </div>
+                    <input type="file" id="camera-input" accept="image/*" capture="camera" style="display: none;">
+                    <input type="file" id="library-input" accept="image/*" style="display: none;">
+                    <div class="file-info">支持 JPG、PNG 格式，最大 10MB</div>
+                    <div class="image-preview" id="image-preview">
+                        <img id="preview-image" src="" alt="预览图片">
+                        <div class="file-info" id="file-info"></div>
+                        <button class="remove-image" onclick="removeSelectedImage()">移除图片</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closePublishModal()">取消</button>
+                <button class="publish-action-btn" id="publish-action-btn" onclick="publishPost()" disabled>发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div class="modal-overlay confirm-modal" id="delete-confirm-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">删除动态</div>
+                <button class="modal-close" onclick="closeDeleteConfirmModal()">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="confirm-content">
+                    <div class="confirm-icon">🗑️</div>
+                    <div class="confirm-text">确定要删除这条动态吗？</div>
+                    <div class="confirm-subtext">此操作不可撤销，动态将被永久删除</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="confirm-cancel" onclick="closeDeleteConfirmModal()">取消</button>
+                <button class="confirm-delete" id="confirm-delete-btn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化变量
+        let currentUser = localStorage.getItem('nick') || '用户';
+        let selectedFile = null;
+        let posts = [];
+        let postToDelete = null;
+        
+        // 实时刷新设置
+        let refreshInterval = 1000; // 1秒刷新一次
+        let refreshTimer = null;
+        let lastUpdateTime = 0;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            if (!currentUser || currentUser === '用户') {
+                showMessage('请先设置昵称', 'error');
+                setTimeout(() => {
+                    window.location.href = 'settings.html';
+                }, 1500);
+                return;
+            }
+
+            // 初始化事件监听
+            initEventListeners();
+            
+            // 启动实时刷新
+            startRealTimeRefresh();
+            
+            // 加载动态数据
+            loadPosts(true);
+        });
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 发布按钮点击事件
+            document.getElementById('publish-btn').addEventListener('click', openPublishModal);
+            
+            // 图片选择事件
+            document.getElementById('camera-input').addEventListener('change', handleImageSelect);
+            document.getElementById('library-input').addEventListener('change', handleImageSelect);
+            
+            // 内容输入事件
+            document.getElementById('post-content').addEventListener('input', validateForm);
+            
+            // 模态框点击事件
+            document.getElementById('publish-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePublishModal();
+                }
+            });
+            
+            document.getElementById('delete-confirm-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDeleteConfirmModal();
+                }
+            });
+            
+            // 确认删除按钮事件
+            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDeletePost);
+        }
+
+        // 实时刷新功能
+        function startRealTimeRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(() => {
+                loadPosts();
+            }, refreshInterval);
+        }
+
+        function stopRealTimeRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        // 页面可见性变化时调整刷新
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopRealTimeRefresh();
+            } else {
+                startRealTimeRefresh();
+                loadPosts(true);
+            }
+        });
+
+        // 返回聊天室
+        function goBack() {
+            window.history.back();
+        }
+
+        // 打开相机
+        function openCamera() {
+            document.getElementById('camera-input').click();
+        }
+
+        // 打开相册
+        function openPhotoLibrary() {
+            document.getElementById('library-input').click();
+        }
+
+        // 打开发布模态框
+        function openPublishModal() {
+            document.getElementById('publish-modal').classList.add('active');
+            document.getElementById('post-content').focus();
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭发布模态框
+        function closePublishModal() {
+            document.getElementById('publish-modal').classList.remove('active');
+            document.getElementById('post-content').value = '';
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('publish-action-btn').disabled = true;
+            selectedFile = null;
+            document.body.style.overflow = '';
+        }
+
+        // 打开确认删除模态框
+        function openDeleteConfirmModal(postId) {
+            postToDelete = postId;
+            document.getElementById('delete-confirm-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭确认删除模态框
+        function closeDeleteConfirmModal() {
+            document.getElementById('delete-confirm-modal').classList.remove('active');
+            postToDelete = null;
+            document.body.style.overflow = '';
+        }
+
+        // 确认删除动态
+        function confirmDeletePost() {
+            if (!postToDelete) return;
+            
+            const deleteBtn = document.getElementById('confirm-delete-btn');
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = '删除中...';
+            
+            fetch('feed.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'delete_post',
+                    post_id: postToDelete,
+                    username: currentUser
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 从本地数据中移除
+                    posts = posts.filter(post => post.id !== postToDelete);
+                    renderPosts();
+                    closeDeleteConfirmModal();
+                    showMessage('动态已删除', 'success');
+                } else {
+                    showMessage(data.message || '删除失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('删除动态错误:', error);
+                showMessage('网络错误，请重试', 'error');
+            })
+            .finally(() => {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = '确认删除';
+            });
+        }
+
+        // 请求删除动态
+        function deletePost(postId) {
+            openDeleteConfirmModal(postId);
+        }
+
+        // 移除选中的图片
+        function removeSelectedImage() {
+            selectedFile = null;
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('camera-input').value = '';
+            document.getElementById('library-input').value = '';
+            validateForm();
+        }
+
+        // 处理图片选择
+        function handleImageSelect(e) {
+            if (e.target.files.length) {
+                handleImageFile(e.target.files[0]);
+            }
+        }
+
+        // 处理图片文件
+        function handleImageFile(file) {
+            // 检查文件类型
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+                showMessage('请选择 JPG 或 PNG 格式的图片', 'error');
+                return;
+            }
+            
+            // 检查文件大小 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('图片大小不能超过 10MB', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-image').src = e.target.result;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('file-info').textContent = 
+                    `已选择: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            };
+            reader.readAsDataURL(file);
+            
+            validateForm();
+        }
+
+        // 验证表单
+        function validateForm() {
+            const content = document.getElementById('post-content').value.trim();
+            const hasContent = content.length > 0;
+            const hasImage = selectedFile !== null;
+            
+            document.getElementById('publish-action-btn').disabled = !(hasContent || hasImage);
+        }
+
+        // 安全检查函数 - 检测和过滤注入攻击
+        function checkSecurity(content) {
+            // 常见的SQL注入和XSS攻击模式
+            const dangerousPatterns = [
+                /(\b)(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|EXEC)(\b)/gi,
+                /(\b)(FROM|WHERE|INTO|VALUES|SET|TABLE|DATABASE)(\b)/gi,
+                /(\b)(AND|OR|NOT|LIKE|BETWEEN|IN|IS|null)(\b)/gi,
+                /(<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>)/gi,
+                /(javascript:)/gi,
+                /(on\w+\s*=)/gi,
+                /(<\?php|<\?=|\?>)/gi,
+                /(eval\s*\()/gi,
+                /(document\.cookie)/gi,
+                /(alert\s*\()/gi,
+                /(window\.location)/gi,
+                /(document\.write)/gi,
+                /(<\/?\w+.*?\/?>)/gi
+            ];
+
+            let hasDangerousContent = false;
+            let filteredContent = content;
+
+            // 检查每个危险模式
+            dangerousPatterns.forEach(pattern => {
+                if (pattern.test(content)) {
+                    hasDangerousContent = true;
+                    // 移除危险内容
+                    filteredContent = filteredContent.replace(pattern, '');
+                }
+            });
+
+            return {
+                hasDangerousContent: hasDangerousContent,
+                filteredContent: filteredContent.trim()
+            };
+        }
+
+        // 发布动态
+        function publishPost() {
+            let content = document.getElementById('post-content').value.trim();
+            
+            if (!content && !selectedFile) {
+                showMessage('请填写内容或选择图片', 'error');
+                return;
+            }
+
+            // 安全检查
+            if (content) {
+                const securityCheck = checkSecurity(content);
+                if (securityCheck.hasDangerousContent) {
+                    showMessage('检测到不安全内容，已自动过滤。请检查发布内容。', 'warning');
+                    content = securityCheck.filteredContent;
+                    // 更新文本框内容
+                    document.getElementById('post-content').value = content;
+                    
+                    // 如果没有内容且没有图片，禁用发布按钮
+                    if (!content && !selectedFile) {
+                        document.getElementById('publish-action-btn').disabled = true;
+                        return;
+                    }
+                }
+            }
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('action', 'publish_post');
+            formData.append('username', currentUser);
+            formData.append('content', content);
+            
+            if (selectedFile) {
+                formData.append('image', selectedFile);
+            }
+            
+            // 显示加载状态
+            const publishBtn = document.getElementById('publish-action-btn');
+            publishBtn.disabled = true;
+            publishBtn.textContent = '发布中...';
+            
+            // 发送到服务器
+            fetch('feed.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 添加到动态列表
+                    posts.unshift(data.post);
+                    
+                    // 重新渲染动态
+                    renderPosts();
+                    
+                    // 关闭模态框
+                    closePublishModal();
+                    
+                    // 显示成功消息
+                    showMessage('动态发布成功', 'success');
+                } else {
+                    showMessage(data.message || '发布失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('发布动态错误:', error);
+                showMessage('网络错误，请重试', 'error');
+            })
+            .finally(() => {
+                publishBtn.disabled = false;
+                publishBtn.textContent = '发布';
+            });
+        }
+
+        // 加载动态
+        function loadPosts(force = false) {
+            const currentTime = Date.now();
+            
+            // 如果不是强制刷新且距离上次刷新时间太短，则跳过
+            if (!force && currentTime - lastUpdateTime < 1000) {
+                return;
+            }
+            
+            fetch(`feed.php?action=get_posts&t=${currentTime}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 检查数据是否真正有变化
+                        if (hasPostsChanged(data.posts, posts)) {
+                            posts = data.posts || [];
+                            renderPosts();
+                            lastUpdateTime = currentTime;
+                        }
+                    } else {
+                        showMessage('加载动态失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('加载动态错误:', error);
+                });
+        }
+
+        // 检查动态是否真正有变化
+        function hasPostsChanged(newPosts, oldPosts) {
+            if (newPosts.length !== oldPosts.length) return true;
+            
+            for (let i = 0; i < newPosts.length; i++) {
+                const newPost = newPosts[i];
+                const oldPost = oldPosts[i];
+                
+                if (!oldPost) return true;
+                if (newPost.id !== oldPost.id) return true;
+                if (newPost.likes !== oldPost.likes) return true;
+                if (newPost.content !== oldPost.content) return true;
+            }
+            
+            return false;
+        }
+
+        // 渲染动态
+        function renderPosts() {
+            const container = document.getElementById('feed-container');
+            
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <p>还没有动态</p>
+                        <p class="subtext">点击右下角按钮发布第一条动态</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = posts.map(post => `
+                <div class="feed-card" data-post-id="${post.id}">
+                    <div class="feed-header">
+                        <div class="user-avatar">${post.user.charAt(0)}</div>
+                        <div class="user-info">
+                            <div class="username">${post.user}</div>
+                            <div class="post-time">${post.time}</div>
+                        </div>
+                        ${post.user === currentUser ? `
+                            <button class="delete-btn" onclick="deletePost('${post.id}')" title="删除动态">🗑️</button>
+                        ` : ''}
+                    </div>
+                    <div class="feed-content">
+                        ${post.content ? `<div class="feed-text">${post.content}</div>` : ''}
+                        ${post.image ? `
+                            <div class="feed-image">
+                                <img src="get_feed_image.php?path=${encodeURIComponent(post.image)}" alt="动态图片" onerror="this.style.display='none'">
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="feed-actions">
+                        <button class="action-btn ${post.liked_users && post.liked_users.includes(currentUser) ? 'liked' : ''}" onclick="toggleLike('${post.id}')">
+                            <i>❤️</i> ${post.likes || 0}
+                        </button>
+                        <button class="action-btn" onclick="showComments('${post.id}')">
+                            <i>💬</i> ${post.comments ? post.comments.length : 0}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 点赞/取消点赞
+        function toggleLike(postId) {
+            fetch('feed.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'like_post',
+                    post_id: postId,
+                    username: currentUser
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新本地数据
+                    const post = posts.find(p => p.id === postId);
+                    if (post) {
+                        post.likes = data.likes;
+                        if (!post.liked_users) post.liked_users = [];
+                        
+                        if (data.liked) {
+                            if (!post.liked_users.includes(currentUser)) {
+                                post.liked_users.push(currentUser);
+                            }
+                        } else {
+                            const index = post.liked_users.indexOf(currentUser);
+                            if (index > -1) {
+                                post.liked_users.splice(index, 1);
+                            }
+                        }
+                    }
+                    
+                    // 重新渲染
+                    renderPosts();
+                } else {
+                    showMessage(data.message || '操作失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('点赞操作错误:', error);
+                showMessage('网络错误，请重试', 'error');
+            });
+        }
+
+        // 显示评论（占位功能）
+        function showComments(postId) {
+            showMessage('评论功能还木有开发完', 'info');
+        }
+
+        // 显示消息提示
+        function showMessage(message, type = 'info') {
+            // 创建消息元素
+            const messageEl = document.createElement('div');
+            messageEl.textContent = message;
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'error' ? '#ff4d4f' : type === 'success' ? '#52c41a' : type === 'warning' ? '#faad14' : '#1890ff'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-size: 14px;
+            `;
+            
+            document.body.appendChild(messageEl);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    document.body.removeChild(messageEl);
+                }
+            }, 3000);
+        }
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePublishModal();
+                closeDeleteConfirmModal();
+            }
+        });
+
+        // 页面卸载时停止刷新
+        window.addEventListener('beforeunload', function() {
+            stopRealTimeRefresh();
+        });
+    </script>
+</body>
+</html>

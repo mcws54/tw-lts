@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - T聊室</title>
+    <style>
+        :root {
+            --primary-blue: #1890ff;
+            --primary-dark: #096dd9;
+            --primary-light: #69c0ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #ff4d4f;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #262626;
+            --text-secondary: #595959;
+            --border-color: #d9d9d9;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 12px;
+            color: var(--text-primary);
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 16px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--primary-blue);
+            border-radius: 2px;
+        }
+
+        /* 水平排列的主题选项 */
+        .theme-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            justify-content: space-between;
+        }
+
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 12px 8px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--card-bg);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .theme-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .theme-option.active {
+            border-color: var(--primary-blue);
+            background: rgba(24, 144, 255, 0.05);
+        }
+
+        .color-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+
+        .theme-option:hover .color-circle {
+            transform: scale(1.05);
+        }
+
+        .theme-option.active .color-circle {
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .theme-default .color-circle {
+            background: linear-gradient(135deg, #1aad19 50%, #f5f5f5 50%);
+        }
+
+        .theme-blue .color-circle {
+            background: linear-gradient(135deg, #1890ff 50%, #e6f7ff 50%);
+        }
+
+        .theme-dark .color-circle {
+            background: linear-gradient(135deg, #2b7de9 50%, #1e1e1e 50%);
+        }
+
+        .theme-pink .color-circle {
+            background: linear-gradient(135deg, #eb2f96 50%, #fff0f6 50%);
+        }
+
+        .theme-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        /* 水平排列的字体大小选项 */
+        .setting-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            justify-content: space-between;
+        }
+
+        .setting-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 12px 8px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--card-bg);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setting-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .setting-option.active {
+            border-color: var(--primary-blue);
+            background: rgba(24, 144, 255, 0.05);
+        }
+
+        .setting-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        .font-preview {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .font-small .font-preview {
+            font-size: 14px;
+        }
+
+        .font-medium .font-preview {
+            font-size: 16px;
+        }
+
+        .font-large .font-preview {
+            font-size: 18px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+
+        input[type="text"].error,
+        input[type="password"].error {
+            border-color: var(--error-color);
+            background-color: rgba(255, 77, 79, 0.05);
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-hint.error {
+            color: var(--error-color);
+        }
+
+        .input-hint.warning {
+            color: var(--warning-color);
+        }
+
+        .input-hint.success {
+            color: var(--success-color);
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .security-badge.safe {
+            background-color: rgba(82, 196, 26, 0.1);
+            color: var(--success-color);
+        }
+
+        .security-badge.warning {
+            background-color: rgba(250, 173, 20, 0.1);
+            color: var(--warning-color);
+        }
+
+        .security-badge.danger {
+            background-color: rgba(255, 77, 79, 0.1);
+            color: var(--error-color);
+        }
+
+        .danger-zone {
+            border-left: 4px solid var(--error-color);
+            background: rgba(255, 77, 79, 0.02);
+        }
+
+        .logout-zone {
+            border-left: 4px solid var(--warning-color);
+            background: rgba(250, 173, 20, 0.02);
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, var(--error-color), #ff7875);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .danger-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, var(--warning-color), #fa8c16);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 14px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .announcement-btn {
+            background: linear-gradient(135deg, var(--warning-color), #fa8c16);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .announcement-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+        }
+
+        .feature-section {
+            border-left: 4px solid var(--error-color);
+            background: rgba(255, 77, 79, 0.02);
+        }
+
+        .feature-btn {
+            background: linear-gradient(135deg, var(--error-color), #ff7875);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+        }
+
+        .feature-btn.disabled {
+            background: var(--border-color);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .feature-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .feature-status.enabled {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px) scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-primary);
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
+
+        .announcement-list {
+            list-style-type: none;
+        }
+
+        .announcement-item {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .announcement-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .announcement-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: toastFade 3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--error-color);
+        }
+
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* 个人信息卡片预览样式 */
+        .profile-card-preview {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .profile-preview-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .profile-preview-intro {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .profile-preview-contact {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            text-align: right;
+        }
+
+        .char-count.warning {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+
+        .char-count.error {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .security-warning {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .security-warning.show {
+            display: flex;
+        }
+
+        /* 密码修改表单样式 */
+        .password-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            background: var(--border-color);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #d1d1d1;
+        }
+
+        .change-password-btn {
+            flex: 2;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .change-password-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        }
+
+        .change-password-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .theme-options,
+            .setting-options {
+                gap: 8px;
+            }
+            
+            .color-circle {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .theme-label,
+            .setting-label {
+                font-size: 10px;
+            }
+            
+            .font-preview {
+                font-size: 14px;
+            }
+            
+            .font-small .font-preview {
+                font-size: 12px;
+            }
+            
+            .font-medium .font-preview {
+                font-size: 14px;
+            }
+            
+            .font-large .font-preview {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .theme-options,
+            .setting-options {
+                flex-wrap: wrap;
+            }
+            
+            .theme-option,
+            .setting-option {
+                flex: 0 0 calc(50% - 8px);
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-default">
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>设置</h1>
+    </div>
+    
+    <!-- 公告按钮 -->
+    <button class="announcement-btn" onclick="showAnnouncements()">
+        <span>📢</span> 查看公告
+    </button>
+
+    <!-- 个人信息预览 -->
+    <div class="profile-card-preview">
+        <div class="profile-preview-name" id="preview-name">未设置昵称</div>
+        <div class="profile-preview-intro" id="preview-intro">点击设置个人信息</div>
+        <div class="profile-preview-contact" id="preview-contact">联系方式未设置</div>
+    </div>
+    
+    <!-- 主题设置 - 水平排列 -->
+    <div class="card">
+        <div class="section-title">主题设置</div>
+        <div class="theme-options">
+            <div class="theme-option theme-default" data-theme="default">
+                <div class="color-circle"></div>
+                <div class="theme-label">默认</div>
+            </div>
+            <div class="theme-option theme-blue" data-theme="blue">
+                <div class="color-circle"></div>
+                <div class="theme-label">淡蓝</div>
+            </div>
+            <div class="theme-option theme-dark" data-theme="dark">
+                <div class="color-circle"></div>
+                <div class="theme-label">夜间</div>
+            </div>
+            <div class="theme-option theme-pink" data-theme="pink">
+                <div class="color-circle"></div>
+                <div class="theme-label">粉红</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 字体大小设置 - 水平排列 -->
+    <div class="card">
+        <div class="section-title">字体大小</div>
+        <div class="setting-options">
+            <div class="setting-option font-small" data-font-size="small">
+                <div class="font-preview">Aa</div>
+                <div class="setting-label">小字体</div>
+            </div>
+            <div class="setting-option font-medium" data-font-size="medium">
+                <div class="font-preview">Aa</div>
+                <div class="setting-label">标准</div>
+            </div>
+            <div class="setting-option font-large" data-font-size="large">
+                <div class="font-preview">Aa</div>
+                <div class="setting-label">大字体</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="section-title">
+            昵称设置
+            <span class="security-badge safe" id="security-badge">安全</span>
+        </div>
+        <div class="input-group">
+            <label for="nickname">昵称</label>
+            <input type="text" id="nickname" placeholder="输入昵称（2-20个字符）" maxlength="20">
+            <div class="input-hint" id="nickname-hint">
+                <span>✅</span>
+                <span>昵称可以使用中文、英文、数字和常用符号</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人信息设置 -->
+    <div class="card">
+        <div class="section-title">个人信息设置</div>
+        <div class="input-group">
+            <label for="user-intro">个人简介</label>
+            <input type="text" id="user-intro" placeholder="介绍一下自己（最多40字）..." maxlength="40">
+            <div class="char-count" id="intro-count">0/40</div>
+            <div class="error-message" id="intro-error">
+                <span>⚠️</span>
+                <span>简介包含不安全内容！</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="user-contact">联系方式</label>
+            <input type="text" id="user-contact" placeholder="QQ/微信/手机号等（最多15字）..." maxlength="15">
+            <div class="char-count" id="contact-count">0/15</div>
+            <div class="error-message" id="contact-error">
+                <span>⚠️</span>
+                <span>联系方式包含不安全内容！</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 密码修改功能 -->
+    <div class="card">
+        <div class="section-title">修改密码</div>
+        <div class="password-form">
+            <div class="input-group">
+                <label for="current-password">当前密码</label>
+                <input type="password" id="current-password" placeholder="请输入当前密码">
+                <div class="error-message" id="current-password-error">
+                    <span>⚠️</span>
+                    <span>当前密码不能为空</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="new-password">新密码</label>
+                <input type="password" id="new-password" placeholder="至少6个字符" maxlength="20">
+                <div class="error-message" id="new-password-error">
+                    <span>⚠️</span>
+                    <span>新密码至少需要6个字符</span>
+                </div>
+                <div class="security-warning" id="new-password-warning">
+                    <span>🔒</span>
+                    <span>检测到潜在的安全风险，建议使用更安全的密码</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="confirm-new-password">确认新密码</label>
+                <input type="password" id="confirm-new-password" placeholder="再次输入新密码" maxlength="20">
+                <div class="error-message" id="confirm-new-password-error">
+                    <span>⚠️</span>
+                    <span>两次输入的密码不一致</span>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button class="cancel-btn" onclick="resetPasswordForm()">取消</button>
+                <button class="change-password-btn" id="change-password-btn" onclick="changePassword()">修改密码</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 红色消息功能区域 -->
+    <div class="card feature-section">
+        <div class="section-title">特殊效果</div>
+        <button class="feature-btn" id="red-message-btn" onclick="toggleRedMessage()">
+            <span id="red-message-text">开启红色消息</span>
+        </button>
+        <div class="feature-status" id="red-message-status">
+            当前状态：未开启
+        </div>
+        <div class="feature-description" style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; text-align: center;">
+            开启后，您的消息将显示为红色
+        </div>
+    </div>
+
+    <!-- 退出登录区域 -->
+    <div class="card logout-zone">
+        <div class="section-title">账户管理</div>
+        <button class="logout-btn" onclick="logout()">
+        <span>退出登录</span>
+        </button>
+    </div>
+    
+    <div class="card danger-zone">
+        <div class="section-title">后台登录</div>
+        <button class="danger-btn" onclick="clearHistory()">登录管理后台</button>
+    </div>
+    
+    <button class="save-btn" id="save-btn" onclick="saveSettings()">保存配置</button>
+
+    <!-- 公告模态框 -->
+    <div class="modal-overlay" id="announcement-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">系统公告</div>
+                <button class="modal-close" onclick="hideAnnouncements()">×</button>
+            </div>
+            <div class="modal-content">
+                <ul class="announcement-list">
+                    <li class="announcement-item">
+                        <div class="announcement-title">聊天室声明</div>
+                        <div class="announcement-date">2025-11-10</div>
+                        <div class="announcement-content">本聊天室严禁发布、传播涉黄、涉赌、涉毒及其他违法违规信息，禁止组织或参与违法犯罪活动，同时不得发表侮辱、诽谤、歧视他人言论及侵犯他人隐私与合法权益，一经发现违规行为，将立即封禁IP，感谢你的配合与遵守。成员应宽容理性地对待不同意见，积极点赞他人创作，尊重原创，避免未经许可引用他人作品；尊重隐私，谨慎处理个人信息，避免泄露；营造良好社区氛围，保持友善沟通；提高网络安全和防诈骗意识，及时举报不实内容。</div>
+                    </li>
+                    <li class="announcement-item">
+                        <div class="announcement-title">更新功能</div>
+                        <div class="announcement-date">2025-11-11</div>
+                        <div class="announcement-content">更新发布图片</div>
+                    </li>
+                    <li class="announcement-item">
+                        <div class="announcement-title">bug修复</div>
+                        <div class="announcement-date">2025-11-12</div>
+                        <div class="announcement-content">修复了过滤问题及发送问题，还修复了显示问题。怎么样？</div>
+                    </li>
+                    <li class="announcement-item">
+                        <div class="announcement-title">紧急提醒</div>
+                        <div class="announcement-date">2025-11-12</div>
+                        <div class="announcement-content">正在修复各种漏洞，漏洞百出！</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 红色消息功能密码输入模态框 -->
+    <div class="modal-overlay" id="red-message-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">开启红色辅助显示</div>
+                <button class="modal-close" onclick="hideRedMessageModal()">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="input-group">
+                    <label for="red-message-password">请输入卡密</label>
+                    <input type="password" id="red-message-password" placeholder="输入卡密333888">
+                </div>
+                <button class="save-btn" onclick="verifyRedMessagePassword()" style="margin-top: 16px;">验证</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化变量
+        let currentUser = localStorage.getItem('currentUser') || localStorage.getItem('nick') || '';
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            if (!currentUser) {
+                showToast('请先登录', 'error');
+                setTimeout(() => {
+                    // 使用replace而不是href，防止返回
+                    window.location.replace('index.html');
+                }, 1000);
+                return false;
+            }
+            return true;
+        }
+
+        // 应用主题
+        function applyTheme() {
+            const savedTheme = localStorage.getItem("chat-theme") || "default";
+            document.body.className = `theme-${savedTheme}`;
+            
+            // 设置当前主题选项为激活状态
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.dataset.theme === savedTheme) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        // 应用字体大小
+        function applyFontSize() {
+            const savedFontSize = localStorage.getItem("font-size") || "medium";
+            document.querySelectorAll('.setting-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.dataset.fontSize === savedFontSize) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        // 显示提示
+        function showToast(message, type = 'error') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+        // 返回聊天页面
+        function goBack() {
+            if (!checkLoginStatus()) return;
+            window.location.href = "chat.html";
+        }
+
+        // 显示公告
+        function showAnnouncements() {
+            if (!checkLoginStatus()) return;
+            document.getElementById('announcement-modal').classList.add('active');
+        }
+
+        // 隐藏公告
+        function hideAnnouncements() {
+            document.getElementById('announcement-modal').classList.remove('active');
+        }
+
+        // 显示红色消息功能模态框
+        function showRedMessageModal() {
+            if (!checkLoginStatus()) return;
+            document.getElementById('red-message-modal').classList.add('active');
+        }
+
+        // 隐藏红色消息功能模态框
+        function hideRedMessageModal() {
+            document.getElementById('red-message-modal').classList.remove('active');
+            document.getElementById('red-message-password').value = '';
+        }
+
+        // 验证红色消息功能密码
+        function verifyRedMessagePassword() {
+            if (!checkLoginStatus()) return;
+            
+            const password = document.getElementById('red-message-password').value;
+            const correctPassword = "333888";
+            
+            if (password === correctPassword) {
+                localStorage.setItem("red-message-enabled", "true");
+                showToast("红色消息功能已开启！", 'success');
+                hideRedMessageModal();
+                updateRedMessageUI();
+            } else {
+                showToast("卡密错误，请重新输入", 'error');
+                document.getElementById('red-message-password').value = '';
+            }
+        }
+
+        // 更新红色消息功能UI状态
+        function updateRedMessageUI() {
+            const isEnabled = localStorage.getItem("red-message-enabled") === "true";
+            const redMessageText = document.getElementById("red-message-text");
+            const redMessageStatus = document.getElementById("red-message-status");
+            
+            if (isEnabled) {
+                redMessageText.textContent = "关闭红色消息";
+                redMessageStatus.textContent = "当前状态：已开启";
+                redMessageStatus.classList.add('enabled');
+            } else {
+                redMessageText.textContent = "开启红色消息";
+                redMessageStatus.textContent = "当前状态：未开启";
+                redMessageStatus.classList.remove('enabled');
+            }
+        }
+
+        // 切换红色消息功能
+        function toggleRedMessage() {
+            if (!checkLoginStatus()) return;
+            
+            const isEnabled = localStorage.getItem("red-message-enabled") === "true";
+            
+            if (isEnabled) {
+                localStorage.setItem("red-message-enabled", "false");
+                showToast("红色消息功能已关闭", 'success');
+                updateRedMessageUI();
+            } else {
+                showRedMessageModal();
+            }
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (!checkLoginStatus()) return;
+            
+            if (confirm("您没有权限进入")) {
+                localStorage.removeItem("visit-count");
+                showToast("Foxm0.01您没有权限进入高级系统", 'error');
+                
+                setTimeout(() => {
+                    localStorage.setItem("first-visit", "true");
+                }, 500);
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            if (!checkLoginStatus()) return;
+            
+            if (confirm("思考过了吗？确定要退出登录吗？")) {
+                // 清除所有登录相关数据
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userToken');
+                localStorage.removeItem('nick');
+                localStorage.removeItem('user-intro');
+                localStorage.removeItem('user-contact');
+                
+                showToast("已退出登录", 'success');
+                
+                // 使用replace而不是href，防止浏览器返回
+                setTimeout(() => {
+                    window.location.replace('index.html');
+                }, 1000);
+            }
+        }
+
+        // 密码安全检测函数
+        function checkPasswordSecurity(password) {
+            if (!password) return { safe: true, warning: '' };
+            
+            const warnings = [];
+            
+            // 检测常见攻击模式
+            const dangerousPatterns = [
+                { pattern: /<script\b[^>]*>/i, message: '检测到脚本标签' },
+                { pattern: /javascript:/i, message: '检测到JavaScript协议' },
+                { pattern: /on\w+\s*=/i, message: '检测到事件处理器' },
+                { pattern: /eval\s*\(/i, message: '检测到eval函数' },
+                { pattern: /alert\s*\(/i, message: '检测到alert函数' },
+                { pattern: /document\./i, message: '检测到document对象' },
+                { pattern: /window\./i, message: '检测到window对象' },
+                { pattern: /location\./i, message: '检测到location对象' },
+                { pattern: /cookie/i, message: '检测到cookie操作' },
+                { pattern: /union\s+select/i, message: '检测到SQL注入模式' },
+                { pattern: /drop\s+table/i, message: '检测到SQL删除语句' },
+                { pattern: /insert\s+into/i, message: '检测到SQL插入语句' }
+            ];
+            
+            for (const { pattern, message } of dangerousPatterns) {
+                if (pattern.test(password.toLowerCase())) {
+                    warnings.push(message);
+                }
+            }
+            
+            // 检测过于简单的密码
+            if (password.length < 8) {
+                warnings.push('密码长度建议至少8位');
+            }
+            
+            if (!/[A-Z]/.test(password)) {
+                warnings.push('非常建议包含大写字母');
+            }
+            
+            if (!/[a-z]/.test(password)) {
+                warnings.push('非常建议包含小写字母');
+            }
+            
+            if (!/\d/.test(password)) {
+                warnings.push('非常建议包含数字');
+            }
+            
+            if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+                warnings.push('非常建议包含特殊字符');
+            }
+            
+            return {
+                safe: warnings.length === 0,
+                warnings: warnings
+            };
+        }
+
+        // 密码修改表单验证
+        function validatePasswordForm() {
+            if (!checkLoginStatus()) return false;
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmNewPassword = document.getElementById('confirm-new-password').value;
+            
+            let isValid = true;
+            
+            // 重置错误状态
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.classList.remove('show');
+            });
+            document.querySelectorAll('.security-warning').forEach(warning => {
+                warning.classList.remove('show');
+            });
+            document.querySelectorAll('input[type="password"]').forEach(input => {
+                input.classList.remove('error');
+            });
+            
+            // 验证当前密码
+            if (!currentPassword) {
+                document.getElementById('current-password-error').classList.add('show');
+                document.getElementById('current-password').classList.add('error');
+                isValid = false;
+            }
+            
+            // 验证新密码
+            if (!newPassword) {
+                document.getElementById('new-password-error').classList.add('show');
+                document.getElementById('new-password').classList.add('error');
+                isValid = false;
+            } else if (newPassword.length < 6) {
+                document.getElementById('new-password-error').textContent = '新密码至少需要6个字符';
+                document.getElementById('new-password-error').classList.add('show');
+                document.getElementById('new-password').classList.add('error');
+                isValid = false;
+            } else {
+                // 密码安全检查
+                const securityCheck = checkPasswordSecurity(newPassword);
+                if (!securityCheck.safe) {
+                    document.getElementById('new-password-warning').classList.add('show');
+                    // 不阻止提交，只是警告
+                }
+            }
+            
+            // 验证确认密码
+            if (!confirmNewPassword) {
+                document.getElementById('confirm-new-password-error').classList.add('show');
+                document.getElementById('confirm-new-password').classList.add('error');
+                isValid = false;
+            } else if (newPassword !== confirmNewPassword) {
+                document.getElementById('confirm-new-password-error').classList.add('show');
+                document.getElementById('confirm-new-password').classList.add('error');
+                isValid = false;
+            }
+            
+            document.getElementById('change-password-btn').disabled = !isValid;
+            return isValid;
+        }
+
+        // 重置密码表单
+        function resetPasswordForm() {
+            if (!checkLoginStatus()) return;
+            
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-new-password').value = '';
+            
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.classList.remove('show');
+            });
+            document.querySelectorAll('.security-warning').forEach(warning => {
+                warning.classList.remove('show');
+            });
+            document.querySelectorAll('input[type="password"]').forEach(input => {
+                input.classList.remove('error');
+            });
+            
+            document.getElementById('change-password-btn').disabled = false;
+        }
+
+        // 修改密码
+        async function changePassword() {
+            if (!validatePasswordForm()) {
+                return;
+            }
+            
+            try {
+                const changePasswordBtn = document.getElementById('change-password-btn');
+                changePasswordBtn.disabled = true;
+                changePasswordBtn.textContent = '修改中...';
+                
+                const response = await fetch('change_password.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        current_password: document.getElementById('current-password').value,
+                        new_password: document.getElementById('new-password').value,
+                        confirm_password: document.getElementById('confirm-new-password').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('密码修改成功', 'success');
+                    resetPasswordForm();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Change password error:', error);
+                showToast('网络错误，请重试', 'error');
+            } finally {
+                const changePasswordBtn = document.getElementById('change-password-btn');
+                changePasswordBtn.disabled = false;
+                changePasswordBtn.textContent = '修改密码';
+            }
+        }
+
+        // 加载个人信息
+        function loadProfileInfo() {
+            const savedNickname = localStorage.getItem("nick") || "未设置昵称";
+            const savedIntro = localStorage.getItem("user-intro") || "";
+            const savedContact = localStorage.getItem("user-contact") || "";
+            
+            // 更新预览
+            document.getElementById('preview-name').textContent = savedNickname;
+            document.getElementById('preview-intro').textContent = savedIntro || '点击设置个人信息';
+            document.getElementById('preview-contact').textContent = savedContact || '联系方式未设置';
+            
+            // 更新输入框
+            document.getElementById('nickname').value = savedNickname;
+            document.getElementById('user-intro').value = savedIntro;
+            document.getElementById('user-contact').value = savedContact;
+            
+            // 更新字符计数
+            updateCharCount();
+        }
+
+        // 更新字符计数
+        function updateCharCount() {
+            const introLength = document.getElementById('user-intro').value.length;
+            const contactLength = document.getElementById('user-contact').value.length;
+            
+            document.getElementById('intro-count').textContent = `${introLength}/40`;
+            document.getElementById('contact-count').textContent = `${contactLength}/15`;
+            
+            document.getElementById('intro-count').className = introLength === 40 ? 'char-count error' : 
+                                 introLength >= 35 ? 'char-count warning' : 'char-count';
+            
+            document.getElementById('contact-count').className = contactLength === 15 ? 'char-count error' : 
+                                   contactLength >= 12 ? 'char-count warning' : 'char-count';
+        }
+
+        // 保存设置
+        async function saveSettings() {
+            if (!checkLoginStatus()) return;
+            
+            const newNickname = document.getElementById('nickname').value.trim();
+            const userIntro = document.getElementById('user-intro').value.trim();
+            const userContact = document.getElementById('user-contact').value.trim();
+            
+            if (!newNickname) {
+                showToast("昵称不能为空", 'error');
+                return;
+            }
+            
+            if (newNickname.length < 2 || newNickname.length > 20) {
+                showToast("昵称长度应为2-20个字符", 'error');
+                return;
+            }
+            
+            try {
+                const saveBtn = document.getElementById('save-btn');
+                saveBtn.disabled = true;
+                saveBtn.textContent = "保存中...";
+                
+                // 保存到服务器
+                const profileRes = await fetch("save_profile.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: newNickname,
+                        intro: userIntro,
+                        contact: userContact
+                    })
+                });
+                
+                const profileData = await profileRes.json();
+                
+                if (profileData.success) {
+                    // 保存本地设置
+                    localStorage.setItem("nick", newNickname);
+                    localStorage.setItem("user-intro", userIntro);
+                    localStorage.setItem("user-contact", userContact);
+                    
+                    showToast("设置已保存", 'success');
+                    
+                    // 更新预览
+                    loadProfileInfo();
+                    
+                    // 返回聊天页面
+                    setTimeout(() => {
+                        window.location.href = "chat.html";
+                    }, 1000);
+                } else {
+                    showToast("保存失败: " + (profileData.message || "未知错误"), 'error');
+                }
+            } catch (err) {
+                console.error("保存设置错误:", err);
+                showToast("网络错误，请重试", 'error');
+            } finally {
+                const saveBtn = document.getElementById('save-btn');
+                saveBtn.disabled = false;
+                saveBtn.textContent = "保存配置";
+            }
+        }
+
+        // 初始化页面
+        function initPage() {
+            // 检查登录状态
+            if (!checkLoginStatus()) return;
+            
+            // 应用主题和字体大小
+            applyTheme();
+            applyFontSize();
+            
+            // 初始化红色消息功能状态
+            updateRedMessageUI();
+            
+            // 加载个人信息
+            loadProfileInfo();
+            
+            // 设置主题选项点击事件
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (!checkLoginStatus()) return;
+                    const theme = this.dataset.theme;
+                    localStorage.setItem("chat-theme", theme);
+                    applyTheme();
+                    showToast(`已切换到${this.querySelector('.theme-label').textContent}主题`, 'success');
+                });
+            });
+            
+            // 设置字体大小选项点击事件
+            document.querySelectorAll('.setting-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (!checkLoginStatus()) return;
+                    const fontSize = this.dataset.fontSize;
+                    localStorage.setItem("font-size", fontSize);
+                    applyFontSize();
+                    showToast(`字体大小已设置为${this.querySelector('.setting-label').textContent}`, 'success');
+                });
+            });
+            
+            // 个人信息输入事件
+            document.getElementById('user-intro').addEventListener('input', updateCharCount);
+            document.getElementById('user-contact').addEventListener('input', updateCharCount);
+            
+            // 密码输入事件监听
+            document.getElementById('new-password').addEventListener('input', validatePasswordForm);
+            document.getElementById('confirm-new-password').addEventListener('input', validatePasswordForm);
+            document.getElementById('current-password').addEventListener('input', validatePasswordForm);
+            
+            // 模态框外部点击关闭
+            document.getElementById('announcement-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideAnnouncements();
+                }
+            });
+            
+            document.getElementById('red-message-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideRedMessageModal();
+                }
+            });
+            
+            // 回车键支持
+            document.getElementById('red-message-password').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    verifyRedMessagePassword();
+                }
+            });
+            
+            document.getElementById('confirm-new-password').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    changePassword();
+                }
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

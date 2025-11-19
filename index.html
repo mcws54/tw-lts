@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 安全头部 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <title>登录 - T聊室</title>
+    <style>
+        :root {
+            --primary-blue: #1890ff;
+            --primary-dark: #096dd9;
+            --primary-light: #69c0ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #ff4d4f;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #262626;
+            --text-secondary: #595959;
+            --border-color: #d9d9d9;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .logo h1 {
+            color: var(--text-primary);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+
+        .form-input.error {
+            border-color: var(--error-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider span {
+            background: var(--card-bg);
+            padding: 0 16px;
+            position: relative;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: var(--primary-dark);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success-color);
+        }
+
+        .toast.error {
+            background: var(--error-color);
+        }
+
+        .attempts-warning {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .attempts-warning.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 24px;
+                margin: 0 16px;
+            }
+            
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">💬</div>
+            <h1>T聊室</h1>
+            <p>可靠 安全 畅聊</p>
+        </div>
+        
+        <form id="login-form" autocomplete="on" novalidate>
+            <div class="form-group">
+                <label class="form-label" for="username">用户名</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="username" 
+                    name="username"
+                    placeholder="请输入用户名" 
+                    required
+                    autocomplete="username"
+                    maxlength="50"
+                    pattern="[a-zA-Z0-9_\u4e00-\u9fa5]+"
+                    title="用户名只能包含字母、数字、下划线和中文"
+                >
+                <div class="error-message" id="username-error">用户名不能为空</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">密码</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="password" 
+                    name="password"
+                    placeholder="请输入密码" 
+                    required
+                    autocomplete="current-password"
+                    maxlength="100"
+                    minlength="6"
+                >
+                <div class="error-message" id="password-error">密码不能为空</div>
+            </div>
+            
+            <button type="submit" class="login-btn" id="login-btn">
+                <span id="btn-text">登录</span>
+            </button>
+            
+            <div class="attempts-warning" id="attempts-warning"></div>
+        </form>
+        
+        <div class="divider">
+            <span>还没有账号？</span>
+        </div>
+        
+        <div class="register-link">
+            <a href="register.html">立即注册</a>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        (function() {
+            'use strict';
+            
+            // 安全配置
+            const SECURITY_CONFIG = {
+                MAX_LOGIN_ATTEMPTS: 5,
+                LOCKOUT_DURATION: 3 * 60 * 1000, // 3分钟（毫秒）
+                USERNAME_MAX_LENGTH: 50,
+                PASSWORD_MAX_LENGTH: 100,
+                PASSWORD_MIN_LENGTH: 6
+            };
+
+            const loginForm = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('login-btn');
+            const btnText = document.getElementById('btn-text');
+            const toast = document.getElementById('toast');
+            const attemptsWarning = document.getElementById('attempts-warning');
+
+            // 输入清理函数 - 防止XSS
+            function sanitizeInput(input) {
+                if (typeof input !== 'string') return '';
+                return input.trim()
+                    .replace(/[<>]/g, '') // 移除潜在的HTML标签字符
+                    .replace(/javascript:/gi, '') // 移除javascript:协议
+                    .replace(/on\w+=/gi, ''); // 移除事件处理器
+            }
+
+            // 验证用户名格式
+            function validateUsername(username) {
+                const cleaned = sanitizeInput(username);
+                if (!cleaned) {
+                    return { valid: false, message: '用户名不能为空' };
+                }
+                if (cleaned.length > SECURITY_CONFIG.USERNAME_MAX_LENGTH) {
+                    return { valid: false, message: `用户名长度不能超过${SECURITY_CONFIG.USERNAME_MAX_LENGTH}个字符` };
+                }
+                // 允许字母、数字、下划线和中文
+                const usernamePattern = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/;
+                if (!usernamePattern.test(cleaned)) {
+                    return { valid: false, message: '用户名只能包含字母、数字、下划线和中文' };
+                }
+                return { valid: true, value: cleaned };
+            }
+
+            // 验证密码格式
+            function validatePassword(password) {
+                if (!password || password.length === 0) {
+                    return { valid: false, message: '密码不能为空' };
+                }
+                if (password.length < SECURITY_CONFIG.PASSWORD_MIN_LENGTH) {
+                    return { valid: false, message: `密码长度至少为${SECURITY_CONFIG.PASSWORD_MIN_LENGTH}位` };
+                }
+                if (password.length > SECURITY_CONFIG.PASSWORD_MAX_LENGTH) {
+                    return { valid: false, message: `密码长度不能超过${SECURITY_CONFIG.PASSWORD_MAX_LENGTH}个字符` };
+                }
+                return { valid: true, value: password };
+            }
+
+            // 获取登录尝试记录
+            function getLoginAttempts() {
+                try {
+                    const attempts = localStorage.getItem('loginAttempts');
+                    return attempts ? JSON.parse(attempts) : { count: 0, lockoutUntil: null };
+                } catch (e) {
+                    return { count: 0, lockoutUntil: null };
+                }
+            }
+
+            // 保存登录尝试记录
+            function saveLoginAttempts(attempts) {
+                try {
+                    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
+                } catch (e) {
+                    console.error('保存登录尝试记录失败:', e);
+                }
+            }
+
+            // 检查是否被锁定
+            function checkLockout() {
+                const attempts = getLoginAttempts();
+                if (attempts.lockoutUntil && Date.now() < attempts.lockoutUntil) {
+                    const remainingMs = attempts.lockoutUntil - Date.now();
+                    const remainingSeconds = Math.ceil(remainingMs / 1000);
+                    const remainingMinutes = Math.ceil(remainingMs / 60000);
+                    
+                    // 如果剩余时间少于1分钟，显示秒数；否则显示分钟数
+                    let timeMessage;
+                    if (remainingSeconds < 60) {
+                        timeMessage = `${remainingSeconds}秒`;
+                    } else {
+                        timeMessage = `${remainingMinutes}分钟`;
+                    }
+                    
+                    return {
+                        locked: true,
+                        message: `登录失败次数过多，请${timeMessage}后再试`
+                    };
+                }
+                // 如果锁定时间已过，重置计数
+                if (attempts.lockoutUntil && Date.now() >= attempts.lockoutUntil) {
+                    saveLoginAttempts({ count: 0, lockoutUntil: null });
+                }
+                return { locked: false };
+            }
+
+            // 增加登录尝试次数
+            function incrementLoginAttempts() {
+                const attempts = getLoginAttempts();
+                attempts.count += 1;
+                
+                if (attempts.count >= SECURITY_CONFIG.MAX_LOGIN_ATTEMPTS) {
+                    attempts.lockoutUntil = Date.now() + SECURITY_CONFIG.LOCKOUT_DURATION;
+                    showToast('登录失败次数过多，请3分钟后再试', 'error');
+                } else {
+                    const remaining = SECURITY_CONFIG.MAX_LOGIN_ATTEMPTS - attempts.count;
+                    attemptsWarning.textContent = `还有 ${remaining} 次尝试机会`;
+                    attemptsWarning.classList.add('show');
+                }
+                
+                saveLoginAttempts(attempts);
+            }
+
+            // 重置登录尝试次数
+            function resetLoginAttempts() {
+                saveLoginAttempts({ count: 0, lockoutUntil: null });
+                attemptsWarning.classList.remove('show');
+            }
+
+            // 显示提示消息
+            function showToast(message, type = 'error') {
+                // 防止XSS - 转义HTML
+                const textNode = document.createTextNode(message);
+                toast.textContent = '';
+                toast.appendChild(textNode);
+                toast.className = `toast ${type} show`;
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // 表单验证
+            function validateForm() {
+                let isValid = true;
+                
+                // 验证用户名
+                const usernameValidation = validateUsername(usernameInput.value);
+                if (!usernameValidation.valid) {
+                    document.getElementById('username-error').textContent = usernameValidation.message;
+                    document.getElementById('username-error').classList.add('show');
+                    usernameInput.classList.add('error');
+                    isValid = false;
+                } else {
+                    document.getElementById('username-error').classList.remove('show');
+                    usernameInput.classList.remove('error');
+                }
+                
+                // 验证密码
+                const passwordValidation = validatePassword(passwordInput.value);
+                if (!passwordValidation.valid) {
+                    document.getElementById('password-error').textContent = passwordValidation.message;
+                    document.getElementById('password-error').classList.add('show');
+                    passwordInput.classList.add('error');
+                    isValid = false;
+                } else {
+                    document.getElementById('password-error').classList.remove('show');
+                    passwordInput.classList.remove('error');
+                }
+                
+                return isValid;
+            }
+
+            // 处理登录
+            async function handleLogin(event) {
+                event.preventDefault();
+                
+                // 检查锁定状态
+                const lockoutCheck = checkLockout();
+                if (lockoutCheck.locked) {
+                    showToast(lockoutCheck.message, 'error');
+                    loginBtn.disabled = true;
+                    setTimeout(() => {
+                        loginBtn.disabled = false;
+                    }, 1000);
+                    return;
+                }
+                
+                if (!validateForm()) {
+                    return;
+                }
+                
+                try {
+                    loginBtn.disabled = true;
+                    btnText.textContent = '登录中...';
+                    
+                    // 清理和验证输入
+                    const usernameValidation = validateUsername(usernameInput.value);
+                    const passwordValidation = validatePassword(passwordInput.value);
+                    
+                    if (!usernameValidation.valid || !passwordValidation.valid) {
+                        showToast('输入验证失败，请检查输入内容');
+                        loginBtn.disabled = false;
+                        btnText.textContent = '登录';
+                        return;
+                    }
+                    
+                    const response = await fetch('login.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: usernameValidation.value,
+                            password: passwordValidation.value
+                        }),
+                        credentials: 'same-origin' // 只发送同源cookie
+                    });
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // 登录成功，重置尝试次数
+                        resetLoginAttempts();
+                        showToast('登录成功', 'success');
+                        
+                        // 安全地保存用户信息到本地存储
+                        try {
+                            localStorage.setItem('currentUser', usernameValidation.value);
+                            if (data.token) {
+                                localStorage.setItem('userToken', data.token);
+                            }
+                            localStorage.setItem('nick', usernameValidation.value); // 兼容原有聊天室系统
+                        } catch (e) {
+                            console.error('保存用户信息失败:', e);
+                        }
+                        
+                        // 跳转到聊天页面
+                        setTimeout(() => {
+                            window.location.href = 'chat.html';
+                        }, 1000);
+                    } else {
+                        // 登录失败，增加尝试次数
+                        incrementLoginAttempts();
+                        // 不泄露具体错误信息，防止用户名枚举攻击
+                        showToast(data.message || '登录失败，请检查用户名和密码');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    // 不向用户显示详细的错误信息
+                    showToast('网络错误，请稍后重试');
+                    incrementLoginAttempts();
+                } finally {
+                    loginBtn.disabled = false;
+                    btnText.textContent = '登录';
+                }
+            }
+
+            // 事件监听
+            loginForm.addEventListener('submit', handleLogin);
+            
+            // 输入时实时验证（防抖处理）
+            let validationTimeout;
+            function debounceValidation() {
+                clearTimeout(validationTimeout);
+                validationTimeout = setTimeout(() => {
+                    validateForm();
+                }, 300);
+            }
+            
+            usernameInput.addEventListener('input', debounceValidation);
+            passwordInput.addEventListener('input', debounceValidation);
+            
+            // 防止表单自动填充敏感信息（额外的安全措施）
+            usernameInput.addEventListener('paste', function(e) {
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const sanitized = sanitizeInput(pastedText);
+                if (sanitized !== pastedText) {
+                    e.preventDefault();
+                    this.value = sanitized;
+                }
+            });
+            
+            // 检查是否已登录
+            try {
+                if (localStorage.getItem('currentUser')) {
+                    window.location.href = 'chat.html';
+                }
+            } catch (e) {
+                console.error('检查登录状态失败:', e);
+            }
+            
+            // 页面可见性变化时检查锁定状态
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    const lockoutCheck = checkLockout();
+                    if (lockoutCheck.locked) {
+                        loginBtn.disabled = true;
+                        showToast(lockoutCheck.message, 'error');
+                    } else {
+                        loginBtn.disabled = false;
+                    }
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

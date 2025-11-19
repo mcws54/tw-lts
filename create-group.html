@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建群组 - T聊室</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --header-bg: #1aad19;
+            --header-color: white;
+            --card-bg: white;
+            --text-color: #333;
+            --border-color: #ddd;
+            --primary-color: #1aad19;
+            --error-color: #ff4d4f;
+            --warning-color: #faad14;
+        }
+
+        .theme-blue {
+            --bg-color: #e6f7ff;
+            --header-bg: #1890ff;
+            --header-color: white;
+            --card-bg: white;
+            --text-color: #333;
+            --border-color: #91d5ff;
+            --primary-color: #1890ff;
+            --error-color: #ff4d4f;
+            --warning-color: #faad14;
+        }
+
+        .theme-dark {
+            --bg-color: #1e1e1e;
+            --header-bg: #2d2d2d;
+            --header-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #404040;
+            --primary-color: #2b7de9;
+            --error-color: #ff4d4f;
+            --warning-color: #faad14;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 12px;
+            color: var(--text-color);
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .input-group input.error {
+            border-color: var(--error-color);
+            background-color: rgba(255, 77, 79, 0.05);
+        }
+
+        .input-group input.warning {
+            border-color: var(--warning-color);
+            background-color: rgba(250, 173, 20, 0.05);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .warning-message {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .warning-message.show {
+            display: flex;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .char-count.warning {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+
+        .char-count.error {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        .password-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .create-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .create-btn:hover {
+            opacity: 0.9;
+        }
+
+        .create-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: toastFade 2s ease;
+        }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-default">
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>创建群组</h1>
+    </div>
+    
+    <div class="card">
+        <div class="input-group">
+            <label for="group-name">群名称</label>
+            <input type="text" id="group-name" placeholder="输入群名称（最多20个字）..." maxlength="20">
+            <div class="char-count" id="group-name-count">0/20</div>
+            <div class="error-message" id="group-name-error">
+                <span>⚠️</span>
+                <span>严禁输入脚本代码或HTML标签！</span>
+            </div>
+            <div class="warning-message" id="group-name-warning">
+                <span>⚠️</span>
+                <span>群名称不能为空！</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="group-code">群编号</label>
+            <input type="text" id="group-code" placeholder="输入群编号...(用于搜索群聊)">
+            <div class="error-message" id="group-code-error">
+                <span>⚠️</span>
+                <span>严禁输入脚本代码或HTML标签！</span>
+            </div>
+            <div class="warning-message" id="group-code-warning">
+                <span>⚠️</span>
+                <span>群编号不能为空！</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="group-password">解群密码</label>
+            <input type="password" id="group-password" placeholder="设置解散群组的密码...">
+            <div class="error-message" id="group-password-error">
+                <span>⚠️</span>
+                <span>严禁输入脚本代码或HTML标签！</span>
+            </div>
+            <div class="warning-message" id="group-password-warning">
+                <span>⚠️</span>
+                <span>解群密码不能为空！</span>
+            </div>
+            <div class="password-note">此密码用于解散群组，请妥善保管</div>
+        </div>
+        
+        <button class="create-btn" onclick="createGroup()" id="create-btn">创建群组</button>
+    </div>
+
+    <script>
+        // 应用主题
+        const savedTheme = localStorage.getItem("chat-theme") || "default";
+        document.body.className = `theme-${savedTheme}`;
+        
+        const nick = localStorage.getItem("nick") || "";
+        const groupNameInput = document.getElementById("group-name");
+        const groupCodeInput = document.getElementById("group-code");
+        const groupPasswordInput = document.getElementById("group-password");
+        const createBtn = document.getElementById("create-btn");
+        
+        const groupNameError = document.getElementById("group-name-error");
+        const groupCodeError = document.getElementById("group-code-error");
+        const groupPasswordError = document.getElementById("group-password-error");
+        
+        const groupNameWarning = document.getElementById("group-name-warning");
+        const groupCodeWarning = document.getElementById("group-code-warning");
+        const groupPasswordWarning = document.getElementById("group-password-warning");
+        
+        const groupNameCount = document.getElementById("group-name-count");
+
+        // 简单XSS和HTML标签检测
+        function hasDangerousContent(text) {
+            if (!text) return false;
+            
+            const dangerousPatterns = [
+                /<script\b[^>]*>/gi, // script开始标签
+                /<\/script>/gi, // script结束标签
+                /javascript:/gi, // javascript协议
+                /on\w+\s*=/gi, // 事件处理器 onclick, onload等
+                /<iframe/gi, // iframe标签
+                /<object/gi, // object标签
+                /<embed/gi, // embed标签
+                /<form/gi, // form标签
+                /<meta/gi, // meta标签
+                /<link/gi, // link标签
+                /<style/gi, // style标签
+                /<img/gi, // img标签
+                /<a\s+href/gi, // a标签带href
+                /eval\s*\(/gi, // eval函数
+                /alert\s*\(/gi, // alert函数
+                /document\./gi, // document对象
+                /window\./gi, // window对象
+                /location\./gi // location对象
+            ];
+            
+            for (const pattern of dangerousPatterns) {
+                if (pattern.test(text)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 更新群名称字数统计
+        function updateGroupNameCount() {
+            const text = groupNameInput.value;
+            const length = text.length;
+            groupNameCount.textContent = `${length}/20`;
+            
+            if (length === 0) {
+                groupNameCount.className = 'char-count';
+            } else if (length >= 18) {
+                groupNameCount.className = 'char-count warning';
+            } else if (length === 20) {
+                groupNameCount.className = 'char-count error';
+            } else {
+                groupNameCount.className = 'char-count';
+            }
+        }
+
+        // 验证输入内容
+        function validateInput(input, errorElement, warningElement) {
+            const value = input.value.trim();
+            
+            // 隐藏所有错误和警告
+            errorElement.classList.remove('show');
+            warningElement.classList.remove('show');
+            input.classList.remove('error');
+            input.classList.remove('warning');
+            
+            // 检查是否为空
+            if (value === '') {
+                warningElement.classList.add('show');
+                input.classList.add('warning');
+                return false;
+            }
+            
+            // 检查危险内容
+            if (hasDangerousContent(value)) {
+                errorElement.classList.add('show');
+                input.classList.add('error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 验证所有输入
+        function validateAllInputs() {
+            const nameValid = validateInput(groupNameInput, groupNameError, groupNameWarning);
+            const codeValid = validateInput(groupCodeInput, groupCodeError, groupCodeWarning);
+            const passwordValid = validateInput(groupPasswordInput, groupPasswordError, groupPasswordWarning);
+            
+            // 更新创建按钮状态
+            createBtn.disabled = !(nameValid && codeValid && passwordValid);
+            
+            return nameValid && codeValid && passwordValid;
+        }
+
+        // 显示提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
+            }, 2000);
+        }
+        
+        // 返回主页面
+        function goBack() {
+            window.location.href = "chat.html";
+        }
+        
+        // 创建群组
+        async function createGroup() {
+            const groupName = groupNameInput.value.trim();
+            const groupCode = groupCodeInput.value.trim();
+            const groupPassword = groupPasswordInput.value.trim();
+            
+            // 最终验证
+            if (!validateAllInputs()) {
+                showToast("请检查输入内容");
+                return;
+            }
+            
+            if (!nick) {
+                showToast("请先设置昵称");
+                setTimeout(() => window.location.href = "settings.html", 1000);
+                return;
+            }
+            
+            try {
+                createBtn.disabled = true;
+                createBtn.textContent = "创建中...";
+                
+                const res = await fetch("create_group.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: groupName,
+                        code: groupCode,
+                        creator: nick,
+                        password: groupPassword
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast("群组创建成功");
+                    setTimeout(() => {
+                        // 保存群组信息并跳转到群聊页面
+                        localStorage.setItem('current-group', JSON.stringify(data.group));
+                        window.location.href = "group-chat.html";
+                    }, 1000);
+                } else {
+                    showToast(data.message || "创建失败");
+                }
+            } catch (err) {
+                showToast("网络错误，请重试");
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = "创建群组";
+            }
+        }
+        
+        // 输入事件监听
+        groupNameInput.addEventListener('input', function() {
+            updateGroupNameCount();
+            validateAllInputs();
+        });
+        
+        groupCodeInput.addEventListener('input', validateAllInputs);
+        groupPasswordInput.addEventListener('input', validateAllInputs);
+        
+        // 粘贴事件监听
+        groupNameInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                updateGroupNameCount();
+                validateAllInputs();
+            }, 0);
+        });
+        
+        groupCodeInput.addEventListener('paste', function(e) {
+            setTimeout(validateAllInputs, 0);
+        });
+        
+        groupPasswordInput.addEventListener('paste', function(e) {
+            setTimeout(validateAllInputs, 0);
+        });
+        
+        // 检查是否有昵称
+        if (!nick) {
+            setTimeout(() => {
+                showToast("请先设置昵称");
+                setTimeout(() => window.location.href = "settings.html", 1000);
+            }, 500);
+        }
+        
+        // 初始化验证
+        validateAllInputs();
+        updateGroupNameCount();
+    </script>
+</body>
+</html>

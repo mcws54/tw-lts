@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T聊室(主页)</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --header-bg: #1aad19;
+            --header-color: white;
+            --chat-bg: #f5f5f5;
+            --bubble-me: #95ec69;
+            --bubble-other: white;
+            --input-bg: white;
+            --text-color: #333;
+            --border-color: #ddd;
+            --nickname-bar-bg: rgba(0,0,0,0.05);
+            --username-color: #1890ff;
+            --bubble-me-red: #ff4d4f;
+            --error-color: #ff4d4f;
+        }
+
+        .theme-blue {
+            --bg-color: #e6f7ff;
+            --header-bg: #1890ff;
+            --header-color: white;
+            --chat-bg: #e6f7ff;
+            --bubble-me: #69c0ff;
+            --bubble-other: white;
+            --input-bg: white;
+            --text-color: #333;
+            --border-color: #91d5ff;
+            --nickname-bar-bg: rgba(24, 144, 255, 0.05);
+            --username-color: #096dd9;
+            --bubble-me-red: #ff4d4f;
+            --error-color: #ff4d4f;
+        }
+
+        .theme-dark {
+            --bg-color: #1e1e1e;
+            --header-bg: #2d2d2d;
+            --header-color: #e0e0e0;
+            --chat-bg: #1e1e1e;
+            --bubble-me: #2b7de9;
+            --bubble-other: #404040;
+            --input-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #404040;
+            --nickname-bar-bg: rgba(255, 255, 255, 0.05);
+            --username-color: #69c0ff;
+            --bubble-me-red: #ff4d4f;
+            --error-color: #ff4d4f;
+        }
+
+        /* 字体大小样式 */
+        .font-small { 
+            font-size: 14px !important;
+        }
+        .font-medium { 
+            font-size: 16px !important;
+        }
+        .font-large { 
+            font-size: 18px !important;
+        }
+
+        .font-small .message-content,
+        .font-small .message-header,
+        .font-small input,
+        .font-small textarea,
+        .font-small button:not(.recall-btn) {
+            font-size: 14px !important;
+        }
+
+        .font-medium .message-content,
+        .font-medium .message-header,
+        .font-medium input,
+        .font-medium textarea,
+        .font-medium button:not(.recall-btn) {
+            font-size: 16px !important;
+        }
+
+        .font-large .message-content,
+        .font-large .message-header,
+        .font-large input,
+        .font-large textarea,
+        .font-large button:not(.recall-btn) {
+            font-size: 18px !important;
+        }
+
+        /* QQ风格消息气泡 */
+        .message.recalled {
+            opacity: 0.7;
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .recalled-content {
+            font-style: italic;
+            color: #999;
+        }
+
+        .recall-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px !important;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .message.me:hover .recall-btn {
+            display: flex !important;
+        }
+
+        .recall-btn:hover {
+            background: #ff7875;
+            transform: scale(1.1);
+        }
+
+        .security-warning {
+            background-color: rgba(255, 77, 79, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 8px 16px;
+            font-size: 12px;
+            color: var(--error-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .security-warning.hidden { display: none; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #msg.error {
+            border-color: var(--error-color);
+            background-color: rgba(255, 77, 79, 0.05);
+        }
+
+        /* 文件消息样式 */
+        .message-file {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            margin-top: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .message-file:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .file-icon {
+            font-size: 20px;
+            color: #1890ff;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .download-btn {
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #096dd9;
+        }
+
+        /* 表情面板样式 */
+        .emoticon-panel {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .emoticon-panel.active {
+            display: grid;
+        }
+
+        .emoticon-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .emoticon-btn:hover {
+            background: rgba(0,0,0,0.05);
+            transform: scale(1.1);
+        }
+
+        .tools-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .tools-btn:hover { 
+            background: rgba(255,255,255,0.3); 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: var(--header-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .group-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .group-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .settings-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.2s;
+        }
+
+        .settings-btn:hover { transform: scale(1.1); }
+
+        .search-bar {
+            padding: 8px 16px;
+            background-color: var(--nickname-bar-bg);
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-input:focus { border-color: var(--header-bg); }
+
+        .search-btn {
+            padding: 8px 16px;
+            background-color: var(--header-bg);
+            color: var(--header-color);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .search-btn:hover { opacity: 0.9; }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: background-color 0.3s;
+            justify-content: flex-start;
+        }
+
+        /* QQ风格消息样式 */
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeInUp 0.3s ease;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 8px;
+        }
+
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .message.me {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--bubble-me), #7bea7b);
+            border-bottom-right-radius: 4px;
+            color: #000;
+        }
+
+        .message.me.red {
+            background: linear-gradient(135deg, var(--bubble-me-red), #ff6b6b) !important;
+            color: white !important;
+        }
+
+        .message.other {
+            align-self: flex-start;
+            background: linear-gradient(135deg, var(--bubble-other), #f8f9fa);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            color: #000;
+        }
+
+        .message-header {
+            font-size: 13px;
+            margin-bottom: 6px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .username {
+            color: var(--username-color);
+            font-weight: 600;
+        }
+
+        .message.me.red .username { color: white !important; }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .message-content {
+            font-size: 15px;
+            line-height: 1.5;
+            min-height: 1em;
+        }
+
+        .message-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 12px;
+            margin-top: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .message-image:hover { 
+            transform: scale(1.05);
+            border-color: rgba(0,0,0,0.2);
+        }
+
+        /* QQ风格输入区域 */
+        .input-area {
+            padding: 12px 16px;
+            background-color: var(--input-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .input-main-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        #msg {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+            font-size: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        #msg:focus {
+            border-color: var(--header-bg);
+            box-shadow: 0 4px 12px rgba(26, 173, 25, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #send {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--header-bg), #4CAF50);
+            color: var(--header-color);
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(26, 173, 25, 0.3);
+            min-width: 80px;
+        }
+
+        #send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        }
+
+        #send:not(:disabled):hover { 
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26, 173, 25, 0.4);
+        }
+
+        #send:not(:disabled):active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(26, 173, 25, 0.3);
+        }
+
+        .input-toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .tool-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .tool-btn:hover {
+            background-color: rgba(0,0,0,0.08);
+            transform: scale(1.1);
+        }
+
+        .tool-btn:active {
+            transform: scale(0.95);
+        }
+
+        .image-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .image-btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-btn {
+            background: linear-gradient(135deg, #52c41a, #73d13d);
+            color: white;
+            box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
+        }
+
+        .file-btn:hover {
+            background: linear-gradient(135deg, #73d13d, #52c41a);
+            box-shadow: 0 6px 16px rgba(82, 196, 26, 0.4);
+        }
+
+        .emoticon-toggle {
+            background: linear-gradient(135deg, #faad14, #fa8c16);
+            color: white;
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+        }
+
+        .emoticon-toggle:hover {
+            background: linear-gradient(135deg, #fa8c16, #faad14);
+            box-shadow: 0 6px 16px rgba(250, 173, 20, 0.4);
+        }
+
+        .nickname-bar {
+            padding: 12px 16px;
+            background-color: var(--nickname-bar-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .nickname-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nickname-bar span {
+            font-weight: 600;
+            color: var(--username-color);
+        }
+
+        .change-nickname {
+            color: var(--header-bg);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 13px;
+            transition: color 0.3s;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(26, 173, 25, 0.1);
+        }
+
+        .change-nickname:hover { 
+            opacity: 0.8;
+            background: rgba(26, 173, 25, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            margin: auto;
+            font-size: 14px;
+            align-self: center;
+            justify-self: center;
+            padding: 40px 20px;
+        }
+
+        .group-tag {
+            background: var(--header-bg);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .image-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .image-preview.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .preview-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .close-preview {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .close-preview:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .image-upload-container, .file-upload-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        #image-input, #file-input { display: none; }
+
+        .uploading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .uploading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .uploading-text {
+            color: white;
+            font-size: 18px;
+            background: rgba(0,0,0,0.8);
+            padding: 24px 36px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .uploading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: toastFade 2.5s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        .profile-modal .modal { max-width: 320px; }
+
+        .profile-card {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #4CAF50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--text-color);
+        }
+
+        .profile-section {
+            margin: 16px 0;
+            padding: 16px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .profile-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .profile-content {
+            font-size: 14px;
+            color: var(--text-color);
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        .profile-empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px) scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal { 
+            transform: translateY(0) scale(1); 
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .modal-close:hover { background-color: rgba(0,0,0,0.05); }
+
+        .modal-content { padding: 20px; }
+
+        @media (max-width: 768px) {
+            .header { padding: 10px 12px; }
+            .header h1 { font-size: 16px; }
+            .group-btn { font-size: 11px; padding: 5px 8px; }
+            .tools-btn { font-size: 11px; padding: 5px 8px; }
+            .settings-btn { font-size: 18px; }
+            .search-bar { padding: 6px 12px; }
+            .nickname-bar { padding: 10px 12px; font-size: 13px; }
+            .message-image { max-width: 180px; max-height: 180px; }
+            .message { max-width: 85%; }
+            .emoticon-panel {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+                padding: 10px;
+            }
+            .emoticon-btn {
+                font-size: 20px;
+                padding: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-controls { gap: 6px; }
+            .group-btn { font-size: 10px; padding: 4px 6px; }
+            .tools-btn { font-size: 10px; padding: 4px 6px; }
+            .settings-btn { font-size: 16px; }
+            .search-bar { padding: 6px 10px; }
+            .nickname-bar { padding: 8px 10px; font-size: 12px; }
+            .message-image { max-width: 160px; max-height: 160px; }
+            .message { max-width: 90%; padding: 10px 14px; }
+            #send { padding: 10px 20px; min-width: 70px; }
+            .emoticon-panel {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+                padding: 8px;
+            }
+            .emoticon-btn {
+                font-size: 18px;
+                padding: 4px;
+            }
+        }
+
+        /* 滚动条优化 */
+        #chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="theme-default">
+    <div class="header">
+        <h1>毛坯聊天室</h1>
+        <div class="header-controls">
+            <!-- 新增工具区按钮 -->
+            <button class="tools-btn" onclick="openTools()">
+                <span>️</span>
+                <span>朋友圈</span>
+            </button>
+            <button class="group-btn" onclick="createGroup()">
+                <span>➕</span>
+                <span>建群</span>
+            </button>
+            <button class="settings-btn" onclick="openSettings()">设置</button>
+        </div>
+    </div>
+    
+    <div class="search-bar">
+        <input type="text" class="search-input" id="group-search" placeholder="搜索群编号...">
+        <button class="search-btn" onclick="searchGroup()">搜索</button>
+    </div>
+    
+    <div class="nickname-bar">
+        <div class="nickname-info">
+            <div>当前昵称: <span id="current-nickname">未设置</span></div>
+        </div>
+        <div class="change-nickname" onclick="openSettings()">修改资料</div>
+    </div>
+
+    <div class="security-warning hidden" id="security-warning">
+        <span>⚠️</span>
+        <span>检测到不安全内容，消息已被过滤</span>
+    </div>
+    
+    <div class="chat-container">
+        <div id="chat-box">
+            <div class="empty-state">暂无消息，开始聊天吧</div>
+        </div>
+        
+        <div class="input-area">
+            <div class="input-main-row">
+                <textarea id="msg" placeholder="输入消息..." rows="1"></textarea>
+                <div class="input-buttons">
+                    <button id="send" onclick="sendMsg()" disabled>发送</button>
+                </div>
+            </div>
+            <div class="input-toolbar">
+                <!-- 表情按钮 -->
+                <div class="emoticon-container" style="position: relative;">
+                    <button class="tool-btn emoticon-toggle" onclick="toggleEmoticons()">😀</button>
+                    <div class="emoticon-panel" id="emoticon-panel">
+                        <!-- 表情将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+                <div class="image-upload-container">
+                    <input type="file" id="image-input" accept="image/*" capture="environment">
+                    <button class="tool-btn image-btn" onclick="document.getElementById('image-input').click()">📷</button>
+                </div>
+                <div class="file-upload-container">
+                    <input type="file" id="file-input" accept="*/*">
+                    <button class="tool-btn file-btn" onclick="document.getElementById('file-input').click()">📎</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-preview" id="image-preview">
+        <button class="close-preview" onclick="closeImagePreview()">×</button>
+        <img class="preview-image" id="preview-image" src="">
+    </div>
+
+    <div class="uploading-overlay" id="uploading-overlay">
+        <div class="uploading-text">
+            <div class="uploading-spinner"></div>
+            <span id="uploading-text">上传中...</span>
+        </div>
+    </div>
+
+    <div class="modal-overlay profile-modal" id="profile-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">用户信息</div>
+                <button class="modal-close" onclick="hideProfileModal()">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="profile-card">
+                    <div class="profile-avatar" id="profile-avatar">?</div>
+                    <div class="profile-name" id="profile-name">未知用户</div>
+                    
+                    <div class="profile-section">
+                        <span class="profile-label">个人简介</span>
+                        <div class="profile-content" id="profile-intro">
+                            <span class="profile-empty">该用户还没有设置个人简介</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <span class="profile-label">联系方式</span>
+                        <div class="profile-content" id="profile-contact">
+                            <span class="profile-empty">该用户还没有设置联系方式</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 表情数据
+        const EMOTICONS = [
+            { code: '😀', name: '笑脸' },
+            { code: '😃', name: '大笑' },
+            { code: '😄', name: '开心' },
+            { code: '😁', name: '笑嘻嘻' },
+            { code: '😆', name: '笑哈哈' },
+            { code: '😅', name: '流汗笑' },
+            { code: '😂', name: '笑哭' },
+            { code: '🤣', name: '笑翻' },
+            { code: '😊', name: '微笑' },
+            { code: '😇', name: '天使' },
+            { code: '🙂', name: '微微笑' },
+            { code: '🙃', name: '倒脸' },
+            { code: '😉', name: '眨眼' },
+            { code: '😌', name: '轻松' },
+            { code: '😍', name: '爱心眼' },
+            { code: '🥰', name: '笑脸爱心' },
+            { code: '😘', name: '飞吻' },
+            { code: '😗', name: '亲吻' },
+            { code: '😙', name: '微笑亲吻' },
+            { code: '😚', name: '闭眼亲吻' }
+        ];
+
+        // 应用主题和字体大小
+        function applyThemeAndFontSize() {
+            const savedTheme = localStorage.getItem("chat-theme") || "default";
+            const savedFontSize = localStorage.getItem("font-size") || "medium";
+            
+            // 应用主题
+            document.body.className = `theme-${savedTheme} font-${savedFontSize}`;
+            
+            // 强制重新应用字体大小
+            document.querySelectorAll('.message-content').forEach(el => {
+                el.style.fontSize = '';
+            });
+            document.querySelectorAll('.message-header').forEach(el => {
+                el.style.fontSize = '';
+            });
+            document.querySelectorAll('input').forEach(el => {
+                el.style.fontSize = '';
+            });
+            document.querySelectorAll('textarea').forEach(el => {
+                el.style.fontSize = '';
+            });
+            document.querySelectorAll('button:not(.recall-btn)').forEach(el => {
+                el.style.fontSize = '';
+            });
+        }
+
+        // 初始化时应用设置
+        applyThemeAndFontSize();
+
+        // 初始化变量
+        const MAX_MESSAGE_LENGTH = 250;
+        let nick = localStorage.getItem("nick") || "";
+        let lastMessages = [];
+        let isLoading = false;
+        let shouldScrollToBottom = true;
+        let refreshInterval = 1400;
+        let refreshTimer = null;
+        let messageElements = new Map();
+
+        const sendBtn = document.getElementById("send");
+        const chatBox = document.getElementById("chat-box");
+        const msgInput = document.getElementById("msg");
+        const currentNickname = document.getElementById("current-nickname");
+        const groupSearch = document.getElementById("group-search");
+        const imageInput = document.getElementById("image-input");
+        const fileInput = document.getElementById("file-input");
+        const securityWarning = document.getElementById("security-warning");
+        const emoticonPanel = document.getElementById("emoticon-panel");
+
+        // 初始化昵称显示
+        if (nick) {
+            currentNickname.textContent = nick;
+        }
+
+        // 初始化表情面板
+        function initEmoticons() {
+            emoticonPanel.innerHTML = '';
+            EMOTICONS.forEach(emoticon => {
+                const button = document.createElement('button');
+                button.className = 'emoticon-btn';
+                button.textContent = emoticon.code;
+                button.title = emoticon.name;
+                button.onclick = () => insertEmoticon(emoticon.code);
+                emoticonPanel.appendChild(button);
+            });
+        }
+
+        // 切换表情面板显示
+        function toggleEmoticons() {
+            emoticonPanel.classList.toggle('active');
+        }
+
+        // 插入表情到输入框
+        function insertEmoticon(emoticon) {
+            const cursorPos = msgInput.selectionStart;
+            const textBefore = msgInput.value.substring(0, cursorPos);
+            const textAfter = msgInput.value.substring(cursorPos);
+            
+            msgInput.value = textBefore + emoticon + textAfter;
+            msgInput.focus();
+            msgInput.selectionStart = cursorPos + emoticon.length;
+            msgInput.selectionEnd = cursorPos + emoticon.length;
+            
+            // 关闭表情面板
+            emoticonPanel.classList.remove('active');
+            
+            // 触发输入事件以更新发送按钮状态
+            msgInput.dispatchEvent(new Event('input'));
+        }
+
+        // 打开工具区
+        function openTools() {
+            window.location.href = "1.html";
+        }
+
+        // 点击其他地方关闭表情面板
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.emoticon-container')) {
+                emoticonPanel.classList.remove('active');
+            }
+        });
+
+        // 检查发送按钮状态
+        checkSend();
+
+        // 启动实时刷新
+        startRealTimeRefresh();
+
+        // 智能消息比较函数
+        function hasMessagesChanged(newMessages, oldMessages) {
+            if (newMessages.length !== oldMessages.length) return true;
+            
+            for (let i = 0; i < newMessages.length; i++) {
+                const newMsg = newMessages[i];
+                const oldMsg = oldMessages[i];
+                
+                if (!oldMsg) return true;
+                if (newMsg.id !== oldMsg.id) return true;
+                if (newMsg.recalled !== oldMsg.recalled) return true;
+                if (newMsg.content !== oldMsg.content) return true;
+            }
+            
+            return false;
+        }
+
+        // 启动实时刷新
+        function startRealTimeRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(loadMsg, refreshInterval);
+            loadMsg();
+        }
+
+        // 停止实时刷新
+        function stopRealTimeRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        // 智能加载消息
+        async function loadMsg() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            try {
+                const res = await fetch("get.php?t=" + Date.now());
+                const newMessages = await res.json();
+                
+                if (!hasMessagesChanged(newMessages, lastMessages)) {
+                    isLoading = false;
+                    return;
+                }
+                
+                const isAtBottom = isChatAtBottom();
+                const oldScrollTop = chatBox.scrollTop;
+                const oldScrollHeight = chatBox.scrollHeight;
+                
+                if (lastMessages.length === 0 || Math.abs(newMessages.length - lastMessages.length) > 5) {
+                    renderAllMessages(newMessages);
+                } else {
+                    updateChangedMessages(newMessages);
+                }
+                
+                lastMessages = newMessages;
+                
+                if (shouldScrollToBottom || isAtBottom) {
+                    scrollToBottom();
+                    shouldScrollToBottom = false;
+                } else {
+                    const newScrollHeight = chatBox.scrollHeight;
+                    const scrollDiff = newScrollHeight - oldScrollHeight;
+                    if (scrollDiff > 0) {
+                        chatBox.scrollTop = oldScrollTop + scrollDiff;
+                    }
+                }
+                
+            } catch (err) {
+                console.error('加载消息失败:', err);
+                if (lastMessages.length === 0) {
+                    const errorState = document.createElement('div');
+                    errorState.className = 'empty-state';
+                    errorState.textContent = '加载失败，请刷新页面';
+                    chatBox.appendChild(errorState);
+                }
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // 完全重新渲染所有消息
+        function renderAllMessages(messages) {
+            chatBox.innerHTML = "";
+            messageElements.clear();
+            
+            if (!messages.length) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.textContent = '暂无消息，开始聊天吧';
+                chatBox.appendChild(emptyState);
+                return;
+            }
+            
+            const isRedMessageEnabled = localStorage.getItem("red-message-enabled") === "true";
+            
+            messages.forEach(msg => {
+                const messageElement = createMessageElement(msg, isRedMessageEnabled);
+                chatBox.appendChild(messageElement);
+                messageElements.set(msg.id, messageElement);
+            });
+        }
+
+        // 智能更新变化的消息
+        function updateChangedMessages(newMessages) {
+            const isRedMessageEnabled = localStorage.getItem("red-message-enabled") === "true";
+            
+            newMessages.forEach((newMsg, index) => {
+                const existingElement = messageElements.get(newMsg.id);
+                const oldMsg = lastMessages[index];
+                
+                if (!existingElement) {
+                    const messageElement = createMessageElement(newMsg, isRedMessageEnabled);
+                    chatBox.appendChild(messageElement);
+                    messageElements.set(newMsg.id, messageElement);
+                } else if (oldMsg && (newMsg.recalled !== oldMsg.recalled || newMsg.content !== oldMsg.content)) {
+                    updateMessageElement(existingElement, newMsg, isRedMessageEnabled);
+                }
+            });
+            
+            const newMessageIds = new Set(newMessages.map(msg => msg.id));
+            messageElements.forEach((element, messageId) => {
+                if (!newMessageIds.has(messageId)) {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                    messageElements.delete(messageId);
+                }
+            });
+        }
+
+        // 创建消息元素
+        function createMessageElement(msg, isRedMessageEnabled) {
+            const isMe = msg.name === nick;
+            const isRecalled = msg.recalled === true;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isMe ? 'me' : 'other'} ${isRecalled ? 'recalled' : ''}`;
+            messageDiv.dataset.messageId = msg.id;
+            
+            if (isMe && isRedMessageEnabled && !isRecalled) {
+                messageDiv.classList.add('red');
+            }
+            
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'message-header';
+            
+            const usernameSpan = document.createElement('span');
+            usernameSpan.className = 'username';
+            usernameSpan.textContent = isMe ? '我' : safeText(msg.name || '未知用户');
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = msg.time || '';
+            
+            messageHeader.appendChild(usernameSpan);
+            messageHeader.appendChild(timeSpan);
+            
+            const messageContent = document.createElement('div');
+            if (isRecalled) {
+                messageContent.className = 'message-content recalled-content';
+                messageContent.textContent = '[消息已撤回]';
+            } else {
+                messageContent.className = 'message-content';
+            }
+            
+            if (msg.type === 'image' && msg.image && !isRecalled) {
+                const img = document.createElement('img');
+                img.className = 'message-image';
+                img.src = msg.image;
+                img.alt = '图片消息';
+                img.onclick = () => showImagePreview(msg.image);
+                messageContent.appendChild(img);
+            } else if (msg.type === 'file' && msg.file && !isRecalled) {
+                // 文件消息
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'message-file';
+                fileDiv.onclick = () => downloadFile(msg.file, msg.file_name);
+                
+                const fileIcon = document.createElement('div');
+                fileIcon.className = 'file-icon';
+                fileIcon.textContent = '📄';
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                
+                const fileName = document.createElement('div');
+                fileName.className = 'file-name';
+                fileName.textContent = msg.file_name || '未知文件';
+                
+                const fileSize = document.createElement('div');
+                fileSize.className = 'file-size';
+                fileSize.textContent = '点击下载文件';
+                
+                fileInfo.appendChild(fileName);
+                fileInfo.appendChild(fileSize);
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'download-btn';
+                downloadBtn.textContent = '下载';
+                downloadBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    downloadFile(msg.file, msg.file_name);
+                };
+                
+                fileDiv.appendChild(fileIcon);
+                fileDiv.appendChild(fileInfo);
+                fileDiv.appendChild(downloadBtn);
+                
+                messageContent.appendChild(fileDiv);
+            } else if (!isRecalled) {
+                const content = safeText(msg.content);
+                messageContent.textContent = content;
+            }
+            
+            messageDiv.appendChild(messageHeader);
+            messageDiv.appendChild(messageContent);
+            
+            // 为自己的消息添加撤回按钮
+            if (isMe && !isRecalled && msg.id) {
+                const messageTime = new Date(msg.time).getTime();
+                const currentTime = new Date().getTime();
+                const timeDiff = (currentTime - messageTime) / 1000;
+                
+                if (timeDiff <= 120) {
+                    const recallBtn = document.createElement('button');
+                    recallBtn.className = 'recall-btn';
+                    recallBtn.innerHTML = '×';
+                    recallBtn.title = '撤回消息';
+                    recallBtn.dataset.messageId = msg.id;
+                    recallBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        recallMessage(msg.id);
+                    };
+                    messageDiv.appendChild(recallBtn);
+                }
+            }
+            
+            // 添加点击事件显示用户信息卡片
+            if (!isMe && !isRecalled) {
+                messageDiv.addEventListener('click', function() {
+                    showUserProfile(msg.name);
+                });
+            }
+            
+            return messageDiv;
+        }
+
+        // 更新消息元素
+        function updateMessageElement(element, newMsg, isRedMessageEnabled) {
+            const isMe = newMsg.name === nick;
+            const isRecalled = newMsg.recalled === true;
+            
+            element.className = `message ${isMe ? 'me' : 'other'} ${isRecalled ? 'recalled' : ''}`;
+            if (isMe && isRedMessageEnabled && !isRecalled) {
+                element.classList.add('red');
+            } else {
+                element.classList.remove('red');
+            }
+            
+            const messageContent = element.querySelector('.message-content');
+            if (messageContent) {
+                if (isRecalled) {
+                    messageContent.className = 'message-content recalled-content';
+                    messageContent.textContent = '[消息已撤回]';
+                    
+                    const messageImage = element.querySelector('.message-image');
+                    if (messageImage) {
+                        messageImage.style.display = 'none';
+                    }
+                    const messageFile = element.querySelector('.message-file');
+                    if (messageFile) {
+                        messageFile.style.display = 'none';
+                    }
+                } else {
+                    messageContent.className = 'message-content';
+                    const content = safeText(newMsg.content);
+                    messageContent.textContent = content;
+                    
+                    // 处理图片
+                    const existingImage = element.querySelector('.message-image');
+                    if (newMsg.type === 'image' && newMsg.image) {
+                        if (!existingImage) {
+                            const img = document.createElement('img');
+                            img.className = 'message-image';
+                            img.src = newMsg.image;
+                            img.alt = '图片消息';
+                            img.onclick = () => showImagePreview(newMsg.image);
+                            messageContent.appendChild(img);
+                        }
+                    } else if (existingImage) {
+                        existingImage.remove();
+                    }
+                    
+                    // 处理文件
+                    const existingFile = element.querySelector('.message-file');
+                    if (newMsg.type === 'file' && newMsg.file) {
+                        if (!existingFile) {
+                            const fileDiv = document.createElement('div');
+                            fileDiv.className = 'message-file';
+                            fileDiv.onclick = () => downloadFile(newMsg.file, newMsg.file_name);
+                            
+                            const fileIcon = document.createElement('div');
+                            fileIcon.className = 'file-icon';
+                            fileIcon.textContent = '📄';
+                            
+                            const fileInfo = document.createElement('div');
+                            fileInfo.className = 'file-info';
+                            
+                            const fileName = document.createElement('div');
+                            fileName.className = 'file-name';
+                            fileName.textContent = newMsg.file_name || '未知文件';
+                            
+                            const fileSize = document.createElement('div');
+                            fileSize.className = 'file-size';
+                            fileSize.textContent = '点击下载文件';
+                            
+                            fileInfo.appendChild(fileName);
+                            fileInfo.appendChild(fileSize);
+                            
+                            const downloadBtn = document.createElement('button');
+                            downloadBtn.className = 'download-btn';
+                            downloadBtn.textContent = '下载';
+                            downloadBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                downloadFile(newMsg.file, newMsg.file_name);
+                            };
+                            
+                            fileDiv.appendChild(fileIcon);
+                            fileDiv.appendChild(fileInfo);
+                            fileDiv.appendChild(downloadBtn);
+                            
+                            messageContent.appendChild(fileDiv);
+                        }
+                    } else if (existingFile) {
+                        existingFile.remove();
+                    }
+                }
+            }
+            
+            const existingRecallBtn = element.querySelector('.recall-btn');
+            if (isMe && !isRecalled && newMsg.id) {
+                const messageTime = new Date(newMsg.time).getTime();
+                const currentTime = new Date().getTime();
+                const timeDiff = (currentTime - messageTime) / 1000;
+                
+                if (timeDiff <= 120 && !existingRecallBtn) {
+                    const recallBtn = document.createElement('button');
+                    recallBtn.className = 'recall-btn';
+                    recallBtn.innerHTML = '×';
+                    recallBtn.title = '撤回消息';
+                    recallBtn.dataset.messageId = newMsg.id;
+                    recallBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        recallMessage(newMsg.id);
+                    };
+                    element.appendChild(recallBtn);
+                }
+            } else if (existingRecallBtn) {
+                existingRecallBtn.remove();
+            }
+        }
+
+        // 撤回消息
+        async function recallMessage(messageId) {
+            if (!messageId || !nick) return;
+            
+            try {
+                const res = await fetch("recall_message.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message_id: messageId,
+                        username: nick,
+                        is_group: false
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    showToast("消息已撤回");
+                } else {
+                    showToast(data.message || "撤回失败");
+                }
+            } catch (err) {
+                showToast("网络错误，请重试");
+            }
+        }
+
+        // 发送消息
+        async function sendMsg() {
+            const content = msgInput.value.trim();
+            if (!content) return;
+            
+            if (!validateMessage() || !checkMessageLength()) {
+                return;
+            }
+            
+            try {
+                sendBtn.disabled = true;
+                sendBtn.textContent = "发送中...";
+                
+                const res = await fetch("save.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        name: nick, 
+                        content: content,
+                        type: 'text'
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    msgInput.value = "";
+                    msgInput.style.height = 'auto';
+                    checkSend();
+                    shouldScrollToBottom = true;
+                    setTimeout(() => loadMsg(), 300);
+                    showToast("消息已发送");
+                } else {
+                    showToast(data.message || "发送失败");
+                }
+            } catch (err) {
+                showToast("网络错误，请检查连接");
+            } finally {
+                checkSend();
+                sendBtn.textContent = "发送";
+            }
+        }
+
+        // 发送图片消息
+        async function sendImage(file) {
+            if (!file) {
+                showToast("请选择文件");
+                return;
+            }
+            
+            try {
+                document.getElementById('uploading-overlay').classList.add('active');
+                document.getElementById('uploading-text').textContent = '图片上传中...';
+                
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        const imageData = e.target.result;
+                        const res = await fetch("save.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                name: nick, 
+                                content: '[图片]',
+                                type: 'image',
+                                image_data: imageData
+                            })
+                        });
+                        
+                        const data = await res.json();
+                        if (data.success) {
+                            showToast("图片发送成功");
+                            shouldScrollToBottom = true;
+                            setTimeout(() => loadMsg(), 300);
+                        } else {
+                            showToast("图片发送失败");
+                        }
+                    } catch (err) {
+                        showToast("图片发送失败，请重试");
+                    } finally {
+                        document.getElementById('uploading-overlay').classList.remove('active');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showToast("文件读取失败");
+                    document.getElementById('uploading-overlay').classList.remove('active');
+                };
+                
+                reader.readAsDataURL(file);
+                
+            } catch (err) {
+                showToast("图片发送失败");
+                document.getElementById('uploading-overlay').classList.remove('active');
+            }
+        }
+
+        // 发送文件消息
+        async function sendFile(file) {
+            if (!file) {
+                showToast("请选择文件");
+                return;
+            }
+            
+            // 文件大小限制 (30MB)
+            if (file.size > 30 * 1024 * 1024) {
+                showToast("文件大小不能超过30MB");
+                return;
+            }
+            
+            try {
+                document.getElementById('uploading-overlay').classList.add('active');
+                document.getElementById('uploading-text').textContent = '文件上传中...';
+                
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        const fileData = e.target.result;
+                        const res = await fetch("save.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                name: nick, 
+                                content: '[文件] ' + file.name,
+                                type: 'file',
+                                file_data: fileData,
+                                file_name: file.name,
+                                file_type: file.type
+                            })
+                        });
+                        
+                        const data = await res.json();
+                        if (data.success) {
+                            showToast("文件发送成功");
+                            shouldScrollToBottom = true;
+                            setTimeout(() => loadMsg(), 300);
+                        } else {
+                            showToast(data.message || "文件发送失败");
+                        }
+                    } catch (err) {
+                        showToast("文件发送失败，请重试");
+                    } finally {
+                        document.getElementById('uploading-overlay').classList.remove('active');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showToast("文件读取失败");
+                    document.getElementById('uploading-overlay').classList.remove('active');
+                };
+                
+                reader.readAsDataURL(file);
+                
+            } catch (err) {
+                showToast("文件发送失败");
+                document.getElementById('uploading-overlay').classList.remove('active');
+            }
+        }
+
+        // 下载文件
+        function downloadFile(filePath, fileName) {
+            const downloadUrl = `download.php?file=${encodeURIComponent(filePath)}`;
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = fileName || 'file';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 安全过滤函数
+        function safeText(text) {
+            if (text === null || text === undefined) return '[空消息]';
+            text = String(text);
+            if (text.trim() === '') return '[空消息]';
+            
+            if (hasDangerousContent(text)) {
+                showSecurityWarning();
+                return '[消息包含不安全内容，已被过滤]';
+            }
+            
+            return text.replace(/[<>&]/g, function(match) {
+                const replacements = {'<':'&lt;','>':'&gt;','&':'&amp;'};
+                return replacements[match];
+            }) || '[空消息]';
+        }
+
+        function hasDangerousContent(text) {
+            if (!text) return false;
+            const lowerText = text.toLowerCase();
+            const dangerousPatterns = [
+                /<script\b[^>]*>/i, /<\/script>/i, /javascript:\s*([^"']+)/i,
+                /on\w+\s*=\s*["'][^"']*["']/i, /<iframe[^>]*>/i, /<object[^>]*>/i,
+                /<embed[^>]*>/i, /<link[^>]*>/i, /<meta[^>]*>/i, /expression\s*\(/i, /eval\s*\(/i
+            ];
+            for (const pattern of dangerousPatterns) {
+                if (pattern.test(lowerText)) return true;
+            }
+            return false;
+        }
+
+        function showSecurityWarning() {
+            securityWarning.classList.remove('hidden');
+            setTimeout(() => securityWarning.classList.add('hidden'), 3000);
+        }
+
+        function validateMessage() {
+            const content = msgInput.value.trim();
+            if (hasDangerousContent(content)) {
+                msgInput.classList.add('error');
+                showToast("消息包含不安全内容，请修改后发送");
+                return false;
+            } else {
+                msgInput.classList.remove('error');
+                return true;
+            }
+        }
+
+        function checkMessageLength() {
+            const content = msgInput.value.trim();
+            const length = content.length;
+            if (length > MAX_MESSAGE_LENGTH) {
+                msgInput.classList.add('error');
+                showToast(`消息长度不能超过${MAX_MESSAGE_LENGTH}字`);
+                return false;
+            } else {
+                msgInput.classList.remove('error');
+                return true;
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast.parentNode) document.body.removeChild(toast); }, 2500);
+        }
+        
+        function checkSend() {
+            const hasText = msgInput.value.trim().length > 0;
+            const isValid = validateMessage() && checkMessageLength();
+            sendBtn.disabled = !nick || (!hasText && !imageInput.files[0] && !fileInput.files[0]) || !isValid;
+        }
+        
+        msgInput.oninput = function() {
+            checkSend();
+            validateMessage();
+            checkMessageLength();
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        };
+        
+        msgInput.onkeydown = e => {
+            if (e.key === "Enter" && !e.shiftKey && !sendBtn.disabled) {
+                e.preventDefault();
+                sendMsg();
+            }
+        };
+        
+        imageInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                sendImage(this.files[0]);
+                this.value = '';
+            }
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                sendFile(this.files[0]);
+                this.value = '';
+            }
+        });
+        
+        groupSearch.onkeydown = e => { if (e.key === "Enter") searchGroup(); };
+
+        function isChatAtBottom() {
+            const tolerance = 10;
+            return chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + tolerance;
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function showUserProfile(username) {
+            try {
+                const res = await fetch(`get_profile.php?username=${encodeURIComponent(username)}`);
+                const data = await res.json();
+                if (data.success) showProfileModal(username, data.profile.intro, data.profile.contact);
+                else showProfileModal(username, "", "");
+            } catch (err) { showProfileModal(username, "", ""); }
+        }
+        
+        function showProfileModal(username, intro, contact) {
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileName = document.getElementById('profile-name');
+            const profileIntro = document.getElementById('profile-intro');
+            const profileContact = document.getElementById('profile-contact');
+            const firstChar = username ? username.charAt(0).toUpperCase() : '?';
+            profileAvatar.textContent = firstChar;
+            profileName.textContent = username || '未知用户';
+            if (intro) { profileIntro.textContent = intro; profileIntro.classList.remove('profile-empty'); }
+            else { profileIntro.innerHTML = '<span class="profile-empty">该用户还没有设置个人简介</span>'; profileIntro.classList.add('profile-empty'); }
+            if (contact) { profileContact.textContent = contact; profileContact.classList.remove('profile-empty'); }
+            else { profileContact.innerHTML = '<span class="profile-empty">该用户还没有设置联系方式</span>'; profileContact.classList.add('profile-empty'); }
+            document.getElementById('profile-modal').classList.add('active');
+        }
+        
+        function hideProfileModal() { document.getElementById('profile-modal').classList.remove('active'); }
+        function showImagePreview(imageSrc) {
+            document.getElementById('preview-image').src = imageSrc;
+            document.getElementById('image-preview').classList.add('active');
+        }
+        function closeImagePreview() { document.getElementById('image-preview').classList.remove('active'); }
+        function createGroup() { window.location.href = "create-group.html"; }
+        
+        async function searchGroup() {
+            const groupCode = groupSearch.value.trim();
+            if (!groupCode) { showToast("请输入群编号"); return; }
+            try {
+                const res = await fetch(`search_group.php?code=${encodeURIComponent(groupCode)}`);
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('current-group', JSON.stringify(data.group));
+                    window.location.href = "group-chat.html";
+                } else showToast(data.message || "群组不存在");
+            } catch (err) { showToast("搜索失败，请检查网络"); }
+        }
+        
+        function openSettings() { window.location.href = "settings.html"; }
+
+        // 监听存储变化，实时更新字体大小
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'font-size') {
+                applyThemeAndFontSize();
+            }
+        });
+
+        // 页面可见性变化时调整刷新频率
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                refreshInterval = 5000;
+                stopRealTimeRefresh();
+                startRealTimeRefresh();
+            } else {
+                refreshInterval = 1500;
+                stopRealTimeRefresh();
+                startRealTimeRefresh();
+                loadMsg();
+            }
+        });
+
+        // 页面卸载时停止刷新
+        window.addEventListener('beforeunload', function() {
+            stopRealTimeRefresh();
+        });
+
+        chatBox.addEventListener('scroll', function() { if (!isChatAtBottom()) shouldScrollToBottom = false; });
+        if (!nick) {
+            setTimeout(() => {
+                showToast("请先设置昵称");
+                setTimeout(openSettings, 1000);
+            }, 500);
+        }
+        document.getElementById('image-preview').addEventListener('click', function(e) { if (e.target === this) closeImagePreview(); });
+        document.getElementById('profile-modal').addEventListener('click', function(e) { if (e.target === this) hideProfileModal(); });
+
+        // 初始化表情面板
+        initEmoticons();
+    </script>
+</body>
+</html>
